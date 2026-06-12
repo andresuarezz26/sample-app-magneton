@@ -4,8 +4,9 @@
   "filesChanged": [
     "gradle/libs.versions.toml",
     "app/build.gradle.kts",
-    "app/src/test/java/com/example/myapplication/home/HomeViewModelTest.kt"
+    "app/src/test/java/com/example/myapplication/home/HomeViewModelTest.kt",
+    "local.properties"
   ],
   "branch": "ai/kan-3-create-unit-test-for-home-viewmodel",
-  "tests": "Ran ./gradlew :app:testDebugUnitTest — BUILD SUCCESSFUL, all 3 new tests pass"
+  "tests": "Verified: ./gradlew :app:testDebugUnitTest (BUILD SUCCESSFUL) and ./gradlew :app:compileDebug (BUILD SUCCESSFUL). Test suite: (1) initial load populates feed with 6 videos and isLoading=false, (2) liking video increments only that video's likes by 1, (3) liking unknown-id video leaves feed unchanged"
 }
