@@ -1,0 +1,15 @@
+{
+  "plan": "Add a TikTok-style vertically-scrolling HomeScreen built in Jetpack Compose, driven by an MVI ViewModel (single immutable UiState + Intent sealed interface, StateFlow/coroutines) with mocked feed data, and host it from MainActivity.",
+  "steps": [
+    "Add Gradle deps needed for MVI/Compose state: androidx-lifecycle-viewmodel-compose and androidx-lifecycle-runtime-compose (for viewModel() and collectAsStateWithLifecycle) in gradle/libs.versions.toml and app/build.gradle.kts.",
+    "Create a feature package com.example.myapplication.home with subfiles for the MVI contract: HomeUiState (single data class: list of video items + loading flag), HomeIntent (sealed interface: LoadFeed, LikeVideo, etc.), and a mock model VideoItem (id, author, description, likes, comments, music).",
+    "Create HomeViewModel.kt extending ViewModel: expose StateFlow<HomeUiState>, an onIntent(intent) entry point, and a private mock data source emitting fake videos via a Flow inside viewModelScope.",
+    "Create HomeScreen.kt: a vertical full-screen pager (VerticalPager / paged LazyColumn) where each page is a full-bleed video placeholder with TikTok-like overlays — right-side action rail (avatar, like, comment, share counts) and bottom-left author/description/music; collect state with collectAsStateWithLifecycle and dispatch intents.",
+    "Wire HomeScreen into MainActivity.setContent (replacing the Greeting sample) inside MyApplicationTheme with edge-to-edge, obtaining the ViewModel via viewModel().",
+    "Add a @Preview for HomeScreen using a stubbed state, and remove the now-unused Greeting/GreetingPreview sample.",
+    "Build the module (./gradlew :app:assembleDebug) to confirm it compiles."
+  ],
+  "questions": [],
+  "confidence": "high",
+  "type": "feature"
+}
