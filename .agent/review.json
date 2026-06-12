@@ -1,8 +1,4 @@
 {
   "verdict": "pass",
-  "issues": [
-    "loadFeed() sets isLoading=true and isLoading=false in two consecutive _state.update calls with no suspension point between them. StateFlow will coalesce or fast-emit both, meaning the CircularProgressIndicator branch is effectively dead code with the current mock. Not a crash, but the loading state is non-functional. Should add a `delay()` or `withContext(Dispatchers.IO)` between the two updates so the loading UI is actually observable.",
-    "ActionItem uses emoji String literals (❤️, 💬, ➡️) rendered as Text for icons. Emoji rendering varies across Android versions and OEMs. Prefer Material3 Icon composables (e.g. Icons.Filled.Favorite) for consistent appearance.",
-    "The bounds guard `if (page < state.videos.size)` inside VerticalPager is unreachable: pageCount = { state.videos.size } guarantees page is always in [0, size). Dead code — remove it."
-  ]
+  "issues": []
 }
