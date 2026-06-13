@@ -1,4 +1,8 @@
 {
-  "verdict": "pass",
-  "issues": []
+  "verdict": "fix",
+  "issues": [
+    "CRITICAL: GetFeedUseCase (domain layer) imports VideoItem from com.example.myapplication.home (presentation layer). This violates clean architecture — domain must never depend on presentation. Solution: Move VideoItem to a shared data/model layer (e.g., com.example.myapplication.data.model) that both domain and presentation can import.",
+    "GetFeedUseCase constructor accepts a CoroutineContext parameter for testability, which is correct, but the dispatcher parameter should be properly documented or use a more explicit name (e.g., 'ioDispatcher' instead of 'dispatcher') to clarify intent.",
+    "HomeViewModel constructor has a private val getFeedUseCase with a default factory. While this works for tests, the default parameter creates instances inline. Consider using constructor injection without a default for clearer dependency management, or document why the default is necessary."
+  ]
 }

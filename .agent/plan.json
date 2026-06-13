@@ -1,17 +1,16 @@
 {
-  "plan": "Add a JUnit unit test class for HomeViewModel covering its critical paths (initial feed load and the like-video reducer), plus the kotlinx-coroutines-test dependency needed to control viewModelScope's Main dispatcher.",
+  "plan": "Create a mock GetFeedUseCase in the domain layer that returns mock video feed data, executing on the ioDispatcher via coroutines, then wire it into HomeViewModel to replace the inline mockVideoFeed() function.",
   "steps": [
-    "Add kotlinx-coroutines-test to the version catalog (gradle/libs.versions.toml): a coroutines version aligned with Kotlin 2.2.10 and a 'kotlinx-coroutines-test' library entry.",
-    "Wire testImplementation(libs.kotlinx.coroutines.test) into app/build.gradle.kts dependencies.",
-    "Create app/src/test/java/com/example/myapplication/home/HomeViewModelTest.kt with a MainDispatcherRule (Dispatchers.setMain(StandardTestDispatcher()) in @Before, Dispatchers.resetMain() in @After) so viewModelScope.launch is controllable in tests.",
-    "Test initial load: after construction (init dispatches LoadFeed), advancing the dispatcher yields state with the 6 mock videos and isLoading == false.",
-    "Test like reducer: onIntent(HomeIntent.LikeVideo) with a known id increments only that video's likes by 1 and leaves the other videos unchanged.",
-    "Test like with unknown id: onIntent(HomeIntent.LikeVideo) with an id not in the feed leaves the videos list unchanged (no crash, no mutation).",
-    "Run ./gradlew :app:testDebugUnitTest to confirm all tests pass."
+    "Create domain package structure: com.example.myapplication.domain.usecase",
+    "Create GetFeedUseCase as a class with invoke suspend operator that returns List<VideoItem>",
+    "Use withContext(Dispatchers.IO) to ensure execution on ioDispatcher as required",
+    "Move mock video data generation from HomeViewModel into GetFeedUseCase",
+    "Inject GetFeedUseCase into HomeViewModel and call it from loadFeed() instead of mockVideoFeed()",
+    "Verify existing unit tests still pass (they should, since behavior is unchanged)"
   ],
   "questions": [],
   "confidence": "high",
-  "type": "chore",
-  "compileCmd": "./gradlew :app:compileDebugSources",
+  "type": "feature",
+  "compileCmd": "./gradlew :app:compileDebugKotlin",
   "testCmd": "./gradlew :app:testDebugUnitTest"
 }

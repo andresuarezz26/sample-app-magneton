@@ -1,5 +1,7 @@
 package com.example.myapplication.home
 
+import com.example.myapplication.data.model.VideoItem
+import com.example.myapplication.domain.usecase.GetFeedUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -30,7 +32,8 @@ class HomeViewModelTest {
 
     @Test
     fun `initial load populates feed with 6 videos and isLoading is false`() = runTest(testDispatcher) {
-        val viewModel = HomeViewModel()
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
         advanceUntilIdle()
 
         val state = viewModel.state.value
@@ -40,7 +43,8 @@ class HomeViewModelTest {
 
     @Test
     fun `liking a video increments only that video likes by 1`() = runTest(testDispatcher) {
-        val viewModel = HomeViewModel()
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
         advanceUntilIdle()
 
         val targetId = "1"
@@ -59,7 +63,8 @@ class HomeViewModelTest {
 
     @Test
     fun `liking a video with unknown id leaves feed unchanged`() = runTest(testDispatcher) {
-        val viewModel = HomeViewModel()
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
         advanceUntilIdle()
 
         val videosBefore = viewModel.state.value.videos.toList()
