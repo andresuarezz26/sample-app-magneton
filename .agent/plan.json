@@ -1,17 +1,17 @@
 {
-  "plan": "Add a JUnit unit test class for HomeViewModel covering its critical paths (initial feed load and the like-video reducer), plus the kotlinx-coroutines-test dependency needed to control viewModelScope's Main dispatcher.",
+  "plan": "Create Espresso integration tests to verify the Home screen's basic functionality: feed loading, video display, UI element visibility, and like button interactions.",
   "steps": [
-    "Add kotlinx-coroutines-test to the version catalog (gradle/libs.versions.toml): a coroutines version aligned with Kotlin 2.2.10 and a 'kotlinx-coroutines-test' library entry.",
-    "Wire testImplementation(libs.kotlinx.coroutines.test) into app/build.gradle.kts dependencies.",
-    "Create app/src/test/java/com/example/myapplication/home/HomeViewModelTest.kt with a MainDispatcherRule (Dispatchers.setMain(StandardTestDispatcher()) in @Before, Dispatchers.resetMain() in @After) so viewModelScope.launch is controllable in tests.",
-    "Test initial load: after construction (init dispatches LoadFeed), advancing the dispatcher yields state with the 6 mock videos and isLoading == false.",
-    "Test like reducer: onIntent(HomeIntent.LikeVideo) with a known id increments only that video's likes by 1 and leaves the other videos unchanged.",
-    "Test like with unknown id: onIntent(HomeIntent.LikeVideo) with an id not in the feed leaves the videos list unchanged (no crash, no mutation).",
-    "Run ./gradlew :app:testDebugUnitTest to confirm all tests pass."
+    "Create HomeScreenTest.kt in app/src/androidTest/java/com/example/myapplication/home/ with @RunWith(AndroidJUnit4::class) annotation",
+    "Add a test for feed loading: verify the initial state shows the first video's content (author name, description, like count) on the screen",
+    "Add a test for like button functionality: click the like button for the first video and verify the like count increments in the UI",
+    "Add a test for UI element visibility: verify that all main UI elements are displayed (author avatar, action items icons with counts, music disc, tabs)",
+    "Add a test for vertical paging: verify that scrolling down navigates to the next video and displays its content correctly",
+    "Use Compose testing APIs (onNodeWithText, performClick) for Compose-specific elements since HomeScreen is Compose-based",
+    "Verify state transitions: check that loading spinner appears during feed load and then disappears when content is ready"
   ],
   "questions": [],
   "confidence": "high",
   "type": "chore",
-  "compileCmd": "./gradlew :app:compileDebugSources",
-  "testCmd": "./gradlew :app:testDebugUnitTest"
+  "compileCmd": "./gradlew :app:compileDebugAndroidTestKotlin",
+  "testCmd": "./gradlew :app:connectedDebugAndroidTest"
 }

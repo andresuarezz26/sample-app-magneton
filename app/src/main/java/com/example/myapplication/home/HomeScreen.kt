@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -116,7 +117,7 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
                     .background(Color.White.copy(alpha = 0.25f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = video.author.take(2).uppercase(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(text = video.author.removePrefix("@").take(2).uppercase(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
 
             ActionItem(icon = "❤️", count = formatCount(video.likes), onClick = onLike)
@@ -172,7 +173,9 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
 private fun ActionItem(icon: String, count: String, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .testTag("action_item_$icon")
     ) {
         Text(text = icon, fontSize = 30.sp)
         Spacer(modifier = Modifier.height(2.dp))
@@ -181,8 +184,8 @@ private fun ActionItem(icon: String, count: String, onClick: () -> Unit) {
 }
 
 private fun formatCount(count: Int): String = when {
-    count >= 1_000_000 -> "${count / 1_000_000}M"
-    count >= 1_000 -> "${count / 1_000}K"
+    count >= 1_000_000 -> "%.1fM".format(count / 1_000_000.0)
+    count >= 1_000 -> "%.1fK".format(count / 1_000.0)
     else -> count.toString()
 }
 

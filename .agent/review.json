@@ -1,4 +1,9 @@
 {
-  "verdict": "pass",
-  "issues": []
+  "verdict": "fix",
+  "issues": [
+    "testAuthorAvatarDisplays() expects 'AS' but implementation produces '@A': HomeScreen.kt:119 uses video.author.take(2).uppercase() which for '@astro_facts' gives '@A' not 'AS'. Should remove '@' prefix before taking characters.",
+    "Like count formatting mismatch in 4 tests (testLikeButtonIncrementsCount, testInitialStateShowsCorrectCounts, testMultipleLikeClicksIncrementCountCorrectly, testFeedLoadsAndDisplaysFirstVideo): tests expect decimal format '48.2K' and '48.3K' but formatCount uses integer division (48200/1000=48 displays as '48K' not '48.2K'). Either fix formatCount to use decimal formatting or update test expectations to match integer division output.",
+    "Like button click selector may not work: testLikeButtonIncrementsCount and testMultipleLikeClicksIncrementCountCorrectly use onNodeWithText('❤️').performClick() but clickable modifier is on parent Column, not the Text node. This may fail to trigger the click handler. Use a more explicit selector or find the clickable container.",
+    "testLoadingStateTransitionsToContent() insufficient: only verifies content appears after time advance, doesn't verify loading spinner was shown initially. Should assert spinner is displayed before advancing time, then verify spinner disappears and content appears."
+  ]
 }
