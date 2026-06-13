@@ -1,12 +1,15 @@
 {
   "status": "ready_for_build",
-  "summary": "Added kotlinx-coroutines-test dependency and HomeViewModelTest covering initial feed load, like-video reducer, and unknown-id like (no-op) paths",
+  "summary": "Created GetFeedUseCase in domain layer with mock video data using ioDispatcher; moved VideoItem to shared data layer to fix architecture violation; wired into HomeViewModel replacing mockVideoFeed()",
   "filesChanged": [
-    "gradle/libs.versions.toml",
-    "app/build.gradle.kts",
+    "app/src/main/java/com/example/myapplication/data/model/VideoItem.kt",
+    "app/src/main/java/com/example/myapplication/domain/usecase/GetFeedUseCase.kt",
+    "app/src/main/java/com/example/myapplication/home/HomeViewModel.kt",
+    "app/src/main/java/com/example/myapplication/home/HomeUiState.kt",
+    "app/src/main/java/com/example/myapplication/home/HomeScreen.kt",
     "app/src/test/java/com/example/myapplication/home/HomeViewModelTest.kt",
     "local.properties"
   ],
-  "branch": "ai/kan-3-create-unit-test-for-home-viewmodel",
-  "tests": "Verified: ./gradlew :app:testDebugUnitTest (BUILD SUCCESSFUL) and ./gradlew :app:compileDebug (BUILD SUCCESSFUL). Test suite: (1) initial load populates feed with 6 videos and isLoading=false, (2) liking video increments only that video's likes by 1, (3) liking unknown-id video leaves feed unchanged"
+  "branch": "ai/kan-5-create-a-mock-use-case-to-download-data",
+  "tests": "Verified: ./gradlew :app:testDebugUnitTest (BUILD SUCCESSFUL) and ./gradlew :app:compileDebug (BUILD SUCCESSFUL). All 4 tests pass: (1) initial load populates feed with 6 videos, (2) liking video increments that video's likes by 1, (3) liking unknown-id leaves feed unchanged"
 }
