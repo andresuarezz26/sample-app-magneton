@@ -16,6 +16,7 @@ class HomeViewModel(
 
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
+    private var filterTopic: String? = null
 
     init {
         onIntent(HomeIntent.LoadFeed)
@@ -28,10 +29,18 @@ class HomeViewModel(
         }
     }
 
+    fun setTopicFilter(topic: String?) {
+        filterTopic = topic
+        loadFeed()
+    }
+
     private fun loadFeed() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            val videos = getFeedUseCase()
+            var videos = getFeedUseCase()
+            filterTopic?.let { topic ->
+                videos = videos.filter { it.topics.contains(topic) }
+            }
             _state.update { it.copy(videos = videos, isLoading = false) }
         }
     }

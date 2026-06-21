@@ -19,7 +19,8 @@ class GetFeedUseCase(
                 comments = 1203,
                 shares = 892,
                 music = "Cosmic Vibes — Science Beats",
-                backgroundColorHex = 0xFF1A1A2E
+                backgroundColorHex = 0xFF1A1A2E,
+                topics = extractTopics("Did you know black holes emit Hawking radiation? The universe is wild! #space #physics")
             ),
             VideoItem(
                 id = "2",
@@ -29,7 +30,8 @@ class GetFeedUseCase(
                 comments = 4521,
                 shares = 3100,
                 music = "Wave Function — Quantum Sounds",
-                backgroundColorHex = 0xFF16213E
+                backgroundColorHex = 0xFF16213E,
+                topics = extractTopics("Schrodinger's cat explained in 60 seconds. Mind = blown. #quantum #physics")
             ),
             VideoItem(
                 id = "3",
@@ -39,7 +41,8 @@ class GetFeedUseCase(
                 comments = 2890,
                 shares = 5601,
                 music = "DNA Sequence — Bio Beats",
-                backgroundColorHex = 0xFF0F3460
+                backgroundColorHex = 0xFF0F3460,
+                topics = extractTopics("CRISPR gene editing could cure genetic diseases forever. The future of medicine is here! #biology")
             ),
             VideoItem(
                 id = "4",
@@ -49,7 +52,8 @@ class GetFeedUseCase(
                 comments = 987,
                 shares = 2341,
                 music = "Ocean Drift — Nature Sounds",
-                backgroundColorHex = 0xFF1B4332
+                backgroundColorHex = 0xFF1B4332,
+                topics = extractTopics("Ocean currents regulate our entire climate. Here's how they work and why they matter. #earth")
             ),
             VideoItem(
                 id = "5",
@@ -59,7 +63,8 @@ class GetFeedUseCase(
                 comments = 6200,
                 shares = 8900,
                 music = "Neural Pulse — Brain Beats",
-                backgroundColorHex = 0xFF3D0C11
+                backgroundColorHex = 0xFF3D0C11,
+                topics = extractTopics("Your brain processes images in just 13 milliseconds. Faster than you can blink. #neuroscience")
             ),
             VideoItem(
                 id = "6",
@@ -69,8 +74,14 @@ class GetFeedUseCase(
                 comments = 9800,
                 shares = 14200,
                 music = "Molecule Mix — Lab Sounds",
-                backgroundColorHex = 0xFF2D3561
+                backgroundColorHex = 0xFF2D3561,
+                topics = extractTopics("Why does mixing bleach and ammonia create a deadly gas? The chemistry explained safely. #chemistry")
             )
         )
+    }
+
+    private fun extractTopics(description: String): List<String> {
+        val regex = Regex("#\\w+")
+        return regex.findAll(description).map { it.value.substring(1) }.toList()
     }
 }

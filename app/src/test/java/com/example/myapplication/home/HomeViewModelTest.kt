@@ -73,4 +73,35 @@ class HomeViewModelTest {
 
         assertEquals(videosBefore, viewModel.state.value.videos)
     }
+
+    @Test
+    fun `setting topic filter shows only videos with that topic`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        viewModel.setTopicFilter("physics")
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertEquals(2, state.videos.size)
+        state.videos.forEach { video ->
+            assert(video.topics.contains("physics"))
+        }
+    }
+
+    @Test
+    fun `clearing topic filter shows all videos again`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        viewModel.setTopicFilter("physics")
+        advanceUntilIdle()
+
+        viewModel.setTopicFilter(null)
+        advanceUntilIdle()
+
+        assertEquals(6, viewModel.state.value.videos.size)
+    }
 }

@@ -1,8 +1,10 @@
 {
   "verdict": "fix",
   "issues": [
-    "CRITICAL: GetFeedUseCase (domain layer) imports VideoItem from com.example.myapplication.home (presentation layer). This violates clean architecture — domain must never depend on presentation. Solution: Move VideoItem to a shared data/model layer (e.g., com.example.myapplication.data.model) that both domain and presentation can import.",
-    "GetFeedUseCase constructor accepts a CoroutineContext parameter for testability, which is correct, but the dispatcher parameter should be properly documented or use a more explicit name (e.g., 'ioDispatcher' instead of 'dispatcher') to clarify intent.",
-    "HomeViewModel constructor has a private val getFeedUseCase with a default factory. While this works for tests, the default parameter creates instances inline. Consider using constructor injection without a default for clearer dependency management, or document why the default is necessary."
+    "MainActivity does not implement NavHost as specified in the plan. The approved plan explicitly required 'Update MainActivity to use NavHost with tab-based navigation', but the implementation uses manual mutableStateOf tab switching instead. This undermines the Navigation Compose dependency's purpose and fails to implement proper navigation state management.",
+    "HomeViewModel was not updated to support optional topic filtering as planned. The plan explicitly required 'Update HomeViewModel to support optional topic filtering parameter when loading feed', but HomeViewModel remains completely unchanged and cannot filter by topic.",
+    "Navigation Compose dependency added but unused. androidx.navigation.compose was added to gradle/libs.versions.toml and build.gradle.kts, but NavHost is never instantiated or referenced in the code, making this dependency wasteful.",
+    "DiscoverViewModel does not use constructor dependency injection. While HomeViewModel properly accepts getFeedUseCase as a constructor parameter, DiscoverViewModel instantiates GetFeedUseCase and GetTopicsUseCase with default constructors inline, creating tight coupling and poor testability. Should follow HomeViewModel's pattern.",
+    "Tab navigation will lose view state on switch. Using mutableStateOf-based tab switching destroys and recreates screens when switching tabs, unlike NavHost which properly manages backstack and state preservation. This creates a poor user experience if users navigate back and forth."
   ]
 }
