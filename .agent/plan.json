@@ -1,16 +1,19 @@
 {
-  "plan": "Create a mock GetFeedUseCase in the domain layer that returns mock video feed data, executing on the ioDispatcher via coroutines, then wire it into HomeViewModel to replace the inline mockVideoFeed() function.",
+  "plan": "Create Espresso integration tests to verify basic home screen functionality: app launch, video display, like button interaction, loading state, and vertical paging.",
   "steps": [
-    "Create domain package structure: com.example.myapplication.domain.usecase",
-    "Create GetFeedUseCase as a class with invoke suspend operator that returns List<VideoItem>",
-    "Use withContext(Dispatchers.IO) to ensure execution on ioDispatcher as required",
-    "Move mock video data generation from HomeViewModel into GetFeedUseCase",
-    "Inject GetFeedUseCase into HomeViewModel and call it from loadFeed() instead of mockVideoFeed()",
-    "Verify existing unit tests still pass (they should, since behavior is unchanged)"
+    "Create HomeScreenTest.kt in app/src/androidTest/java/com/example/myapplication/home/",
+    "Set up test class with @RunWith(AndroidJUnit4::class) and ActivityScenarioRule<MainActivity>",
+    "Write test to verify app launches and displays home screen without crashing",
+    "Write test to verify CircularProgressIndicator appears during loading state",
+    "Write test to verify video content is displayed (author text, description, action items)",
+    "Write test to verify like button (heart emoji) is clickable and increments the like count",
+    "Write test to verify vertical paging works (swipe to next video, verify different author displays)",
+    "Write test to verify all action items are visible (author avatar, like, comment, share buttons, music disc)"
   ],
   "questions": [],
   "confidence": "high",
   "type": "feature",
   "compileCmd": "./gradlew :app:compileDebugKotlin",
-  "testCmd": "./gradlew :app:testDebugUnitTest"
+  "testCmd": "./gradlew :app:connectedDebugAndroidTest",
+  "needs_emulator": true
 }
