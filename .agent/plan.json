@@ -1,16 +1,21 @@
 {
-  "plan": "Create a mock GetFeedUseCase in the domain layer that returns mock video feed data, executing on the ioDispatcher via coroutines, then wire it into HomeViewModel to replace the inline mockVideoFeed() function.",
+  "plan": "Add content discovery for scientific topics by extracting topics from video descriptions, creating a DiscoverScreen to browse and filter by topic, and implementing tab-based navigation between Home and Discover screens to help users find scientific content more easily.",
   "steps": [
-    "Create domain package structure: com.example.myapplication.domain.usecase",
-    "Create GetFeedUseCase as a class with invoke suspend operator that returns List<VideoItem>",
-    "Use withContext(Dispatchers.IO) to ensure execution on ioDispatcher as required",
-    "Move mock video data generation from HomeViewModel into GetFeedUseCase",
-    "Inject GetFeedUseCase into HomeViewModel and call it from loadFeed() instead of mockVideoFeed()",
-    "Verify existing unit tests still pass (they should, since behavior is unchanged)"
+    "Add topics: List<String> field to VideoItem data class to store scientific topics from each video",
+    "Update GetFeedUseCase to extract hashtags from video descriptions as topics (parse #hashtag from description strings)",
+    "Create GetTopicsUseCase to extract unique topics across all videos in the feed",
+    "Create DiscoverViewModel to manage topic selection and filtered video list state",
+    "Create DiscoverScreen UI with topic chip list for filtering and videos matching selected topic",
+    "Create DiscoverUiState data class to hold available topics, selected topic, and filtered videos",
+    "Add Navigation Compose dependency to gradle/libs.versions.toml and app/build.gradle.kts",
+    "Update MainActivity to use NavHost with tab-based navigation between HomeScreen and DiscoverScreen",
+    "Update HomeViewModel to support optional topic filtering parameter when loading feed",
+    "Verify unit tests still pass and add new tests for topic extraction and filtering logic"
   ],
   "questions": [],
-  "confidence": "high",
+  "confidence": "medium",
   "type": "feature",
   "compileCmd": "./gradlew :app:compileDebugKotlin",
-  "testCmd": "./gradlew :app:testDebugUnitTest"
+  "testCmd": "./gradlew :app:testDebugUnitTest",
+  "needs_emulator": false
 }

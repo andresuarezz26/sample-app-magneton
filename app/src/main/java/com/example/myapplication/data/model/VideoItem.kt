@@ -8,5 +8,6 @@ data class VideoItem(
     val comments: Int,
     val shares: Int,
     val music: String,
-    val backgroundColorHex: Long
+    val backgroundColorHex: Long,
+    val topics: List<String> = emptyList()
 )
