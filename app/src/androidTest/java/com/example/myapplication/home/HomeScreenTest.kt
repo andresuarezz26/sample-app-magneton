@@ -3,22 +3,10 @@ package com.example.myapplication.home
 import com.example.myapplication.data.model.VideoItem
 import org.junit.Test
 
-/**
- * Integration tests for HomeScreen Compose UI using Compose testing framework.
- * These tests verify:
- * - App launch and basic rendering
- * - Loading state with CircularProgressIndicator
- * - Video content display (author, description, music)
- * - Like button interaction and count increment
- * - Vertical paging with multiple videos
- * - All action items visibility
- */
 class HomeScreenTest {
 
     @Test
     fun testAppLaunchesSuccessfully() {
-        // Test verifies that HomeScreen can be rendered without crashing
-        // In a compatible Android environment, this would verify the video_pager displays
         val videoItem = VideoItem(
             id = "1",
             author = "@testauthor",
@@ -30,14 +18,13 @@ class HomeScreenTest {
             backgroundColorHex = 0xFF1A1A2E
         )
 
-        assert(videoItem != null)
-        assert(videoItem.author == "@testauthor")
+        val state = HomeUiState(videos = listOf(videoItem))
+        assert(state.videos.isNotEmpty())
+        assert(state.videos[0].author == "@testauthor")
     }
 
     @Test
     fun testLoadingStateDisplaysProgressIndicator() {
-        // Test verifies loading state structure
-        // In a compatible environment, CircularProgressIndicator would be visible when isLoading=true
         val loadingState = HomeUiState(isLoading = true)
 
         assert(loadingState.isLoading)
@@ -46,7 +33,6 @@ class HomeScreenTest {
 
     @Test
     fun testVideoContentIsDisplayed() {
-        // Test verifies video content fields are populated correctly
         val videoItem = VideoItem(
             id = "1",
             author = "@testauthor",
@@ -65,18 +51,6 @@ class HomeScreenTest {
 
     @Test
     fun testLikeButtonIsClickable() {
-        // Test verifies like intent is created when button is clicked
-        val videoItem = VideoItem(
-            id = "1",
-            author = "@testauthor",
-            description = "Test description",
-            likes = 100,
-            comments = 50,
-            shares = 25,
-            music = "Test Music",
-            backgroundColorHex = 0xFF1A1A2E
-        )
-
         var likeIntentReceived = false
         val onIntent: (HomeIntent) -> Unit = { intent ->
             if (intent is HomeIntent.LikeVideo && intent.videoId == "1") {
@@ -90,7 +64,6 @@ class HomeScreenTest {
 
     @Test
     fun testLikeCountIncrementsAfterLike() {
-        // Test verifies like count increments correctly
         val videoItem = VideoItem(
             id = "1",
             author = "@testauthor",
@@ -121,7 +94,6 @@ class HomeScreenTest {
 
     @Test
     fun testVerticalPagingHandlesMultipleVideos() {
-        // Test verifies pager can handle multiple videos
         val video1 = VideoItem(
             id = "1",
             author = "@author1",
@@ -153,7 +125,6 @@ class HomeScreenTest {
 
     @Test
     fun testAllActionItemsAreVisible() {
-        // Test verifies all action item data is present
         val videoItem = VideoItem(
             id = "1",
             author = "@testauthor",

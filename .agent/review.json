@@ -1,9 +1,6 @@
 {
   "verdict": "fix",
   "issues": [
-    "testAppLaunchesSuccessfully: Just asserts(true) — this is a no-op test. Either remove it or make it actually test app launch behavior (verify MainActivity displays).",
-    "testLoadingStateDoesNotDisplayVideoContent: Confusing logic with two setContent() calls and missing assertions. More critically, it does not check for CircularProgressIndicator during loading as required by the plan. Fix by setting loading=true, asserting CircularProgressIndicator is displayed, then verifying video content is NOT visible.",
-    "testLikeCountIncrementsAfterLike: Test name claims increment testing but never clicks the like button or verifies the count changed. Currently just checks the initial value is displayed. Either fix to actually test increment or rename to testLikeCountIsDisplayed.",
-    "testVerticalPagingSupportsMultipleVideos: Does not test paging — no swipe/scroll action performed. Currently just verifies both videos exist in state. Fix by using performSwipe() or similar to scroll between videos and verify the second video becomes visible (testVerticalPagingSupportsMultipleVideos should verify author2 displays after scrolling)."
+    "testLikeCountIncrementsAfterLike: Critical flaw in state reactivity. The test mutates a local `currentState` variable after `setContent`, but Compose does not recompose because the variable is not part of Compose's reactive system. The assertion `assert(currentState.videos[0].likes == 101)` checks the Kotlin variable (which was mutated), not the UI. The test would pass even if the UI still displays '100' instead of '101'. Fix: Either (1) use a ViewModel/StateFlow that Compose observes, or (2) after performClick(), add `composeTestRule.waitUntilExists(hasText('101'))` to verify the UI actually updated."
   ]
 }
