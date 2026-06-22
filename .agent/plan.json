@@ -1,16 +1,20 @@
 {
-  "plan": "Create a mock GetFeedUseCase in the domain layer that returns mock video feed data, executing on the ioDispatcher via coroutines, then wire it into HomeViewModel to replace the inline mockVideoFeed() function.",
+  "plan": "Replace HomeScreenTest.kt with proper Compose UI integration tests using androidx.compose.ui.test.junit4 framework to verify app launch, loading states, video rendering, like button interaction, and vertical paging",
   "steps": [
-    "Create domain package structure: com.example.myapplication.domain.usecase",
-    "Create GetFeedUseCase as a class with invoke suspend operator that returns List<VideoItem>",
-    "Use withContext(Dispatchers.IO) to ensure execution on ioDispatcher as required",
-    "Move mock video data generation from HomeViewModel into GetFeedUseCase",
-    "Inject GetFeedUseCase into HomeViewModel and call it from loadFeed() instead of mockVideoFeed()",
-    "Verify existing unit tests still pass (they should, since behavior is unchanged)"
+    "Rewrite HomeScreenTest.kt to use Compose UI testing framework (androidx.compose.ui.test.junit4) with @get:Rule ComposeTestRule and @RunWith(AndroidJUnit4::class)",
+    "Create test to verify HomeScreen renders without crashing using ComposeTestRule.setContent",
+    "Create test to verify CircularProgressIndicator displays when isLoading=true using onNodeWithTag('loading_indicator')",
+    "Create test to verify video content displays correctly (author, description, music) by asserting text presence",
+    "Create test to verify like button is clickable and like count increments using onNodeWithTag('like_button').performClick()",
+    "Create test to verify vertical paging works with multiple videos in HomeUiState using onNodeWithTag('video_pager')",
+    "Create test to verify all action items are visible and display correct formatted counts (likes, comments, shares)",
+    "Verify test tags are properly used: 'loading_indicator' for progress, 'video_pager' for pager, 'like_button' for like button",
+    "Keep ExampleInstrumentedTest.kt unchanged as it's a valid baseline instrumentation test"
   ],
   "questions": [],
   "confidence": "high",
-  "type": "feature",
-  "compileCmd": "./gradlew :app:compileDebugKotlin",
-  "testCmd": "./gradlew :app:testDebugUnitTest"
+  "type": "chore",
+  "compileCmd": "./gradlew :app:compileDebug",
+  "testCmd": "./gradlew :app:connectedAndroidTest",
+  "needs_emulator": true
 }

@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,7 +42,7 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 }
 
 @Composable
-private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
+internal fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
     Box(
@@ -51,13 +52,17 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
     ) {
         if (state.isLoading) {
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .testTag("loading_indicator"),
                 color = Color.White
             )
         } else {
             VerticalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("video_pager")
             ) { page ->
                 if (page < state.videos.size) {
                     val video = state.videos[page]
@@ -120,7 +125,7 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
                 Text(text = video.author.take(2).uppercase(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
 
-            ActionItem(icon = "❤️", count = formatCount(video.likes), onClick = onLike)
+            ActionItem(icon = "❤️", count = formatCount(video.likes), onClick = onLike, testTag = "like_button")
             ActionItem(icon = "💬", count = formatCount(video.comments), onClick = {})
             ActionItem(icon = "➡️", count = formatCount(video.shares), onClick = {})
 
@@ -170,10 +175,12 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
 }
 
 @Composable
-private fun ActionItem(icon: String, count: String, onClick: () -> Unit) {
+private fun ActionItem(icon: String, count: String, onClick: () -> Unit, testTag: String? = null) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
     ) {
         Text(text = icon, fontSize = 30.sp)
         Spacer(modifier = Modifier.height(2.dp))

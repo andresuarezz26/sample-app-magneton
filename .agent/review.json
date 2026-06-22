@@ -1,8 +1,6 @@
 {
   "verdict": "fix",
   "issues": [
-    "CRITICAL: GetFeedUseCase (domain layer) imports VideoItem from com.example.myapplication.home (presentation layer). This violates clean architecture — domain must never depend on presentation. Solution: Move VideoItem to a shared data/model layer (e.g., com.example.myapplication.data.model) that both domain and presentation can import.",
-    "GetFeedUseCase constructor accepts a CoroutineContext parameter for testability, which is correct, but the dispatcher parameter should be properly documented or use a more explicit name (e.g., 'ioDispatcher' instead of 'dispatcher') to clarify intent.",
-    "HomeViewModel constructor has a private val getFeedUseCase with a default factory. While this works for tests, the default parameter creates instances inline. Consider using constructor injection without a default for clearer dependency management, or document why the default is necessary."
+    "testLikeCountIncrementsAfterLike: Critical flaw in state reactivity. The test mutates a local `currentState` variable after `setContent`, but Compose does not recompose because the variable is not part of Compose's reactive system. The assertion `assert(currentState.videos[0].likes == 101)` checks the Kotlin variable (which was mutated), not the UI. The test would pass even if the UI still displays '100' instead of '101'. Fix: Either (1) use a ViewModel/StateFlow that Compose observes, or (2) after performClick(), add `composeTestRule.waitUntilExists(hasText('101'))` to verify the UI actually updated."
   ]
 }
