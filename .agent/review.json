@@ -1,8 +1,10 @@
 {
   "verdict": "fix",
   "issues": [
-    "CRITICAL: GetFeedUseCase (domain layer) imports VideoItem from com.example.myapplication.home (presentation layer). This violates clean architecture — domain must never depend on presentation. Solution: Move VideoItem to a shared data/model layer (e.g., com.example.myapplication.data.model) that both domain and presentation can import.",
-    "GetFeedUseCase constructor accepts a CoroutineContext parameter for testability, which is correct, but the dispatcher parameter should be properly documented or use a more explicit name (e.g., 'ioDispatcher' instead of 'dispatcher') to clarify intent.",
-    "HomeViewModel constructor has a private val getFeedUseCase with a default factory. While this works for tests, the default parameter creates instances inline. Consider using constructor injection without a default for clearer dependency management, or document why the default is necessary."
+    "ProcessingScreen.kt line 131: CRITICAL BUG - paperId parameter is not passed to PollPaperStatusUseCase. Code calls pollStatusUseCase(\"\") with empty string instead of the paperId passed to the composable. The paperId is received at line 45 but never used. ProcessingViewModelFactory accepts paperId at line 137 but doesn't pass it to ProcessingViewModel constructor. Must modify factory to pass paperId and ProcessingViewModel to accept and use it when calling the use case.",
+    "MainActivity.kt line 43 & UploadScreen.kt line 110: Test tag collision - both FAB and Select PDF button use testTag(\"fab_upload\"), violating test uniqueness. The button in FileTab should use a distinct test tag like \"btn_select_pdf\".",
+    "ProcessingScreen.kt architecture: ProcessingViewModel, ProcessingUiState, and ProcessingViewModelFactory defined in Compose screen file. For consistency with UploadViewModel and maintainability, extract these to separate files in upload package.",
+    "ProfileScreen.kt architecture: ProfileViewModel, ProfileUiState, and ProfileViewModelFactory defined in Compose screen file. For consistency with codebase, extract these to separate files in profile package.",
+    "Navigation: Flow lacks back navigation capability. Users cannot return from Upload, Processing, or Profile screens to Home. While happy-path flow works, UX is incomplete - add back buttons or modify navigation to support returning to Home."
   ]
 }

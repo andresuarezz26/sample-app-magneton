@@ -1,16 +1,21 @@
 {
-  "plan": "Create a mock GetFeedUseCase in the domain layer that returns mock video feed data, executing on the ioDispatcher via coroutines, then wire it into HomeViewModel to replace the inline mockVideoFeed() function.",
+  "plan": "Add a Compose-first Paper Upload & Processing feature (upload via system file picker or DOI/arXiv URL, mock backend submit + status polling, a processing screen, and a profile 'My Papers' list) following the existing MVI + mock-use-case conventions, with simple state-based navigation reached from a Home upload FAB.",
   "steps": [
-    "Create domain package structure: com.example.myapplication.domain.usecase",
-    "Create GetFeedUseCase as a class with invoke suspend operator that returns List<VideoItem>",
-    "Use withContext(Dispatchers.IO) to ensure execution on ioDispatcher as required",
-    "Move mock video data generation from HomeViewModel into GetFeedUseCase",
-    "Inject GetFeedUseCase into HomeViewModel and call it from loadFeed() instead of mockVideoFeed()",
-    "Verify existing unit tests still pass (they should, since behavior is unchanged)"
+    "Add data models: PaperStatus enum (QUEUED, PROCESSING, COMPLETED, FAILED) and a Paper/PaperVideo model for the completed result shown in the profile feed.",
+    "Create domain mock use cases mirroring GetFeedUseCase (suspend operator invoke + injectable dispatcher): UploadPaperUseCase (accepts a PDF Uri or DOI/URL, returns a fake paperId after a short delay), PollPaperStatusUseCase (returns Flow<PaperStatus> emitting QUEUED/PROCESSING then COMPLETED using Flow + delay ~5s, simulating 30-120s), and GetMyPapersUseCase (returns hardcoded processed papers).",
+    "Create the upload feature package (com.example.myapplication.upload) with UploadUiState, UploadIntent (SelectTab, PickPdf, EnterDoi, SubmitFile, SubmitDoi, Retry), and UploadViewModel following the HomeViewModel pattern, modeling upload-progress, success (paperId), and error/retry state.",
+    "Build UploadScreen Compose UI: a tabbed layout (File tab + DOI tab) with testTags (fab_upload, tab_doi, input_doi, btn_submit); wire the file picker via rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) restricted to application/pdf; show a progress indicator during upload.",
+    "Build ProcessingScreen Compose UI with an animated placeholder, a processingScreen container tag and a processingMessage tag, observing the polled status; show an error message with a retry button on FAILED.",
+    "Add a ProfileScreen with a 'My Papers' section (myPapersList testTag) rendering processed video cards (videoCard testTag) sourced from GetMyPapersUseCase.",
+    "Introduce minimal state-based navigation in MainActivity (a sealed Screen state + when() switch, no new navigation dependency) wiring Home (with an upload FAB) -> Upload -> Processing -> Profile to match the acceptance-criteria flow.",
+    "Add unit tests under app/src/test for UploadViewModel and PollPaperStatusUseCase (status transitions, success path, failure + retry) using StandardTestDispatcher/runTest, mirroring HomeViewModelTest.",
+    "Add Compose instrumentation tests under app/src/androidTest using createAndroidComposeRule<MainActivity>() and onNodeWithTag (DOI submit -> processing screen; completed paper -> profile 'My Papers'), replacing the ticket's View-ID Espresso example since this is a Compose app.",
+    "Run ./gradlew :app:compileDebugSources and ./gradlew :app:testDebugUnitTest to validate compilation and unit tests."
   ],
   "questions": [],
-  "confidence": "high",
+  "confidence": "medium",
   "type": "feature",
-  "compileCmd": "./gradlew :app:compileDebugKotlin",
-  "testCmd": "./gradlew :app:testDebugUnitTest"
+  "compileCmd": "./gradlew :app:compileDebugSources",
+  "testCmd": "./gradlew :app:testDebugUnitTest",
+  "needs_emulator": true
 }
