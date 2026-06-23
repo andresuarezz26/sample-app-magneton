@@ -1,16 +1,20 @@
 {
-  "plan": "Create a mock GetFeedUseCase in the domain layer that returns mock video feed data, executing on the ioDispatcher via coroutines, then wire it into HomeViewModel to replace the inline mockVideoFeed() function.",
+  "plan": "Add a new Discover feature (Compose screen + ViewModel + mock paginated use case) mirroring the existing Home MVI pattern, plus a bottom-nav scaffold so users can reach it, fixing the missing/empty Discover experience.",
   "steps": [
-    "Create domain package structure: com.example.myapplication.domain.usecase",
-    "Create GetFeedUseCase as a class with invoke suspend operator that returns List<VideoItem>",
-    "Use withContext(Dispatchers.IO) to ensure execution on ioDispatcher as required",
-    "Move mock video data generation from HomeViewModel into GetFeedUseCase",
-    "Inject GetFeedUseCase into HomeViewModel and call it from loadFeed() instead of mockVideoFeed()",
-    "Verify existing unit tests still pass (they should, since behavior is unchanged)"
+    "Add domain model: create data/model/Paper.kt (id, title, authors, field/category) and a ScientificField list/enum (Biology, Physics, CS, etc.) to back the field tag and category filter.",
+    "Create domain/usecase/GetDiscoverFeedUseCase.kt returning a page of mock Paper items given a page index and optional category, mirroring GetFeedUseCase (hardcoded mock data, client-side filtering, finite pages so pagination terminates).",
+    "Create discover/DiscoverUiState.kt as a sealed interface: Loading, Success(papers, selectedCategory, isPaginating, endReached), Error, Empty (empty state for no content).",
+    "Create discover/DiscoverIntent.kt: LoadFeed, SelectCategory(field), LoadNextPage.",
+    "Create discover/DiscoverViewModel.kt exposing StateFlow<DiscoverUiState>; load first page on init, append on LoadNextPage, re-query and reset paging on SelectCategory (client-side filter), emit Empty when no papers, Error on failure.",
+    "Create discover/DiscoverScreen.kt: a category filter chip row, a LazyColumn of paper cards (title, authors, field tag), bottom-reached detection that dispatches LoadNextPage, and Loading/Empty/Error rendering; add testTags (discoverFeed, paperCard, paperTitle, fieldTag, errorView) to support UI tests.",
+    "Update MainActivity.kt to host a simple bottom navigation (Home + Discover) so the Discover tab is reachable; tag the Discover nav item (nav_discover).",
+    "Add app/src/test/java/.../discover/DiscoverViewModelTest.kt covering initial load, category filtering, pagination append, and empty state, following HomeViewModelTest's StandardTestDispatcher pattern.",
+    "Add app/src/androidTest/java/.../discover/DiscoverHappyPathTest.kt as a Compose UI test (createAndroidComposeRule + onNodeWithTag) mirroring the ticket's happy paths, since the View/Espresso/RecyclerView IDs in the ticket do not exist in this Compose app."
   ],
   "questions": [],
-  "confidence": "high",
+  "confidence": "medium",
   "type": "feature",
-  "compileCmd": "./gradlew :app:compileDebugKotlin",
-  "testCmd": "./gradlew :app:testDebugUnitTest"
+  "compileCmd": "./gradlew :app:compileDebugSources",
+  "testCmd": "./gradlew :app:testDebugUnitTest",
+  "needs_emulator": true
 }
