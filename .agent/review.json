@@ -1,8 +1,11 @@
 {
   "verdict": "fix",
   "issues": [
-    "CRITICAL: GetFeedUseCase (domain layer) imports VideoItem from com.example.myapplication.home (presentation layer). This violates clean architecture — domain must never depend on presentation. Solution: Move VideoItem to a shared data/model layer (e.g., com.example.myapplication.data.model) that both domain and presentation can import.",
-    "GetFeedUseCase constructor accepts a CoroutineContext parameter for testability, which is correct, but the dispatcher parameter should be properly documented or use a more explicit name (e.g., 'ioDispatcher' instead of 'dispatcher') to clarify intent.",
-    "HomeViewModel constructor has a private val getFeedUseCase with a default factory. While this works for tests, the default parameter creates instances inline. Consider using constructor injection without a default for clearer dependency management, or document why the default is necessary."
+    "CRITICAL: Navigation 3 integration NOT implemented. Approved plan requires 'Update MainActivity to integrate Navigation 3 with bottom navigation for Home and Discover tabs', but MainActivity.kt still only renders HomeScreen() without NavController, NavHost, or BottomNavigation. Home and Discover screens cannot be accessed together.",
+    "CRITICAL: DiscoverViewModelTest unit tests NOT created. Approved plan specifies 'Create DiscoverViewModelTest (test/discover/DiscoverViewModelTest.kt) with unit tests for feed loading, category filtering, and pagination'. File is missing entirely.",
+    "CRITICAL: DiscoverHappyPathTest instrumented tests NOT created. Approved plan specifies 'Create DiscoverHappyPathTest (androidTest/discover/DiscoverHappyPathTest.kt) with Espresso tests matching ticket requirements'. File is missing entirely.",
+    "BUG: Race condition in pagination. DiscoverScreen.kt LaunchedEffect (line 95-98) triggers LoadNextPage when isNearEnd becomes true without preventing concurrent requests. If user scrolls quickly, multiple LoadNextPage intents fire before previous completes, causing currentPage to increment multiple times and skipping pages or loading duplicates. Fix: Add a loading flag or debounce the pagination trigger.",
+    "CODE QUALITY: Unused import in DiscoverScreen.kt line 19. 'androidx.compose.foundation.verticalScroll' is imported but never used. Remove unused import.",
+    "CODE QUALITY: Pagination logic tightly coupled to hardcoded page size. DiscoverViewModel and GetDiscoverFeedUseCase determine hasMore via 'papers.size == 4' without explicit page size constant. Extract PAGE_SIZE as a named constant and pass it explicitly for clarity and maintainability."
   ]
 }

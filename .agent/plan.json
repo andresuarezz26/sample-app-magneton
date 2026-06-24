@@ -1,16 +1,20 @@
 {
-  "plan": "Create a mock GetFeedUseCase in the domain layer that returns mock video feed data, executing on the ioDispatcher via coroutines, then wire it into HomeViewModel to replace the inline mockVideoFeed() function.",
+  "plan": "Implement Discover feature with paper feed, category filtering, pagination, and proper error handling; integrate Navigation 3 for Home/Discover tab switching.",
   "steps": [
-    "Create domain package structure: com.example.myapplication.domain.usecase",
-    "Create GetFeedUseCase as a class with invoke suspend operator that returns List<VideoItem>",
-    "Use withContext(Dispatchers.IO) to ensure execution on ioDispatcher as required",
-    "Move mock video data generation from HomeViewModel into GetFeedUseCase",
-    "Inject GetFeedUseCase into HomeViewModel and call it from loadFeed() instead of mockVideoFeed()",
-    "Verify existing unit tests still pass (they should, since behavior is unchanged)"
+    "Create Paper data model (data/model/Paper.kt) with fields: id, title, authors (List<String>), field (category), abstract, likes",
+    "Create GetDiscoverFeedUseCase (domain/usecase/GetDiscoverFeedUseCase.kt) with mock papers across multiple fields (Physics, Biology, Chemistry, CS); support pagination and filtering",
+    "Create DiscoverUiState (discover/DiscoverUiState.kt) as sealed class with Loading, Success(papers, selectedCategory, hasMore), Error(message) states",
+    "Create DiscoverIntent (discover/DiscoverIntent.kt) with intents: LoadFeed, SelectCategory(field), LoadNextPage",
+    "Create DiscoverViewModel (discover/DiscoverViewModel.kt) that loads feed, handles category filtering (client-side), manages pagination, and exposes UiState",
+    "Create DiscoverScreen (discover/DiscoverScreen.kt) with LazyColumn showing paper cards; include category filter chips at top, paper card components showing title/authors/field, error state view, and empty state",
+    "Update MainActivity to integrate Navigation 3 with bottom navigation for Home and Discover tabs",
+    "Create DiscoverViewModelTest (test/discover/DiscoverViewModelTest.kt) with unit tests for feed loading, category filtering, and pagination",
+    "Create DiscoverHappyPathTest (androidTest/discover/DiscoverHappyPathTest.kt) with Espresso tests matching ticket requirements: feed loads, papers display, scroll pagination, category filtering"
   ],
   "questions": [],
   "confidence": "high",
   "type": "feature",
   "compileCmd": "./gradlew :app:compileDebugKotlin",
-  "testCmd": "./gradlew :app:testDebugUnitTest"
+  "testCmd": "./gradlew :app:testDebugUnitTest",
+  "needs_emulator": true
 }
