@@ -10,6 +10,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * The [getFeedUseCase] default is intentional: [HomeScreen] obtains this ViewModel via Compose's
+ * `viewModel()`, which instantiates it through a no-arg constructor. The default keeps that path
+ * working without introducing a ViewModelFactory/DI framework (kept simple per the MVP scope),
+ * while still allowing tests to inject a fake use case through the constructor.
+ */
 class HomeViewModel(
     private val getFeedUseCase: GetFeedUseCase = GetFeedUseCase()
 ) : ViewModel() {
