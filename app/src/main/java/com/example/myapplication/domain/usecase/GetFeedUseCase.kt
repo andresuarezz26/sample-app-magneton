@@ -5,6 +5,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
+/**
+ * Returns the (mock) video feed for the home screen.
+ *
+ * @param ioDispatcher the IO-bound [CoroutineContext] the work runs on; defaults to
+ * [Dispatchers.IO] and can be overridden in tests with a deterministic dispatcher.
+ */
 class GetFeedUseCase(
     private val ioDispatcher: CoroutineContext = Dispatchers.IO
 ) {
