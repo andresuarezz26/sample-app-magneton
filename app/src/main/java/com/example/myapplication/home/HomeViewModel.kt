@@ -25,6 +25,9 @@ class HomeViewModel(
         when (intent) {
             HomeIntent.LoadFeed -> loadFeed()
             is HomeIntent.LikeVideo -> likeVideo(intent.videoId)
+            is HomeIntent.SelectTab -> selectTab(intent.tab)
+            is HomeIntent.SaveVideo -> saveVideo(intent.videoId)
+            is HomeIntent.RemoveBookmark -> removeBookmark(intent.videoId)
         }
     }
 
@@ -43,6 +46,22 @@ class HomeViewModel(
                     if (video.id == videoId) video.copy(likes = video.likes + 1) else video
                 }
             )
+        }
+    }
+
+    private fun selectTab(tab: Tab) {
+        _state.update { it.copy(selectedTab = tab) }
+    }
+
+    private fun saveVideo(videoId: String) {
+        _state.update { current ->
+            current.copy(savedVideoIds = current.savedVideoIds + videoId)
+        }
+    }
+
+    private fun removeBookmark(videoId: String) {
+        _state.update { current ->
+            current.copy(savedVideoIds = current.savedVideoIds - videoId)
         }
     }
 }

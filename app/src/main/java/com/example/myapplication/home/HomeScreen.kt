@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,8 +43,6 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 
 @Composable
 private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
-    val pagerState = rememberPagerState(pageCount = { state.videos.size })
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -55,16 +54,50 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
                 color = Color.White
             )
         } else {
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                if (page < state.videos.size) {
-                    val video = state.videos[page]
-                    VideoPage(
-                        video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
-                    )
+            when (state.selectedTab) {
+                Tab.Following, Tab.ForYou -> {
+                    val pagerState = rememberPagerState(pageCount = { state.videos.size })
+                    VerticalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        if (page < state.videos.size) {
+                            val video = state.videos[page]
+                            VideoPage(
+                                video = video,
+                                isBookmarked = state.savedVideoIds.contains(video.id),
+                                onLike = { onIntent(HomeIntent.LikeVideo(video.id)) },
+                                onRemoveBookmark = { onIntent(HomeIntent.RemoveBookmark(video.id)) },
+                                onTabSelect = { tab -> onIntent(HomeIntent.SelectTab(tab)) },
+                                selectedTab = state.selectedTab,
+                                onBookmark = { onIntent(HomeIntent.SaveVideo(video.id)) }
+                            )
+                        }
+                    }
+                }
+                Tab.Saved -> {
+                    val savedVideos = state.videos.filter { state.savedVideoIds.contains(it.id) }
+                    if (savedVideos.isEmpty()) {
+                        EmptyState()
+                    } else {
+                        val pagerState = rememberPagerState(pageCount = { savedVideos.size })
+                        VerticalPager(
+                            state = pagerState,
+                            modifier = Modifier.fillMaxSize()
+                        ) { page ->
+                            if (page < savedVideos.size) {
+                                val video = savedVideos[page]
+                                VideoPage(
+                                    video = video,
+                                    isBookmarked = true,
+                                    onLike = { onIntent(HomeIntent.LikeVideo(video.id)) },
+                                    onRemoveBookmark = { onIntent(HomeIntent.RemoveBookmark(video.id)) },
+                                    onTabSelect = { tab -> onIntent(HomeIntent.SelectTab(tab)) },
+                                    selectedTab = state.selectedTab
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -72,13 +105,21 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
 }
 
 @Composable
-private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
+private fun VideoPage(
+    video: VideoItem,
+    isBookmarked: Boolean,
+    onLike: () -> Unit,
+    onRemoveBookmark: () -> Unit,
+    onTabSelect: (Tab) -> Unit,
+    selectedTab: Tab,
+    onBookmark: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(video.backgroundColorHex))
     ) {
-        // Top nav: Following / For You tabs
+        // Top nav: Following / For You / Saved tabs
         Row(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -87,16 +128,20 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            TabButton(
                 text = "Following",
-                color = Color.White.copy(alpha = 0.6f),
-                fontSize = 15.sp
+                isSelected = selectedTab == Tab.Following,
+                onClick = { onTabSelect(Tab.Following) }
             )
-            Text(
+            TabButton(
                 text = "For You",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
+                isSelected = selectedTab == Tab.ForYou,
+                onClick = { onTabSelect(Tab.ForYou) }
+            )
+            TabButton(
+                text = "Saved",
+                isSelected = selectedTab == Tab.Saved,
+                onClick = { onTabSelect(Tab.Saved) }
             )
         }
 
@@ -123,6 +168,11 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
             ActionItem(icon = "❤️", count = formatCount(video.likes), onClick = onLike)
             ActionItem(icon = "💬", count = formatCount(video.comments), onClick = {})
             ActionItem(icon = "➡️", count = formatCount(video.shares), onClick = {})
+
+            val bookmarkIcon = if (isBookmarked) "🔖" else "🔗"
+            ActionItem(icon = bookmarkIcon, count = "", onClick = {
+                if (isBookmarked) onRemoveBookmark() else onBookmark()
+            })
 
             // Music disc
             Box(
@@ -170,14 +220,58 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
 }
 
 @Composable
+private fun TabButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
+    Text(
+        text = text,
+        color = if (isSelected) Color.White else Color.White.copy(alpha = 0.6f),
+        fontSize = 15.sp,
+        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+        modifier = Modifier.clickable(onClick = onClick)
+    )
+}
+
+@Composable
+private fun EmptyState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(horizontal = 24.dp)
+        ) {
+            Text(
+                text = "📄",
+                fontSize = 64.sp
+            )
+            Text(
+                text = "No saved papers yet",
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Tap the bookmark icon to save papers",
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
 private fun ActionItem(icon: String, count: String, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable(onClick = onClick)
     ) {
         Text(text = icon, fontSize = 30.sp)
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(text = count, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        if (count.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(text = count, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        }
     }
 }
 
