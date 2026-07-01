@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -32,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.data.model.VideoItem
+import com.example.myapplication.settings.BottomNavigationBar
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
@@ -44,30 +44,38 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        if (state.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White
-            )
-        } else {
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                if (page < state.videos.size) {
-                    val video = state.videos[page]
-                    VideoPage(
-                        video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
-                    )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .background(Color.Black)
+        ) {
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.White
+                )
+            } else {
+                VerticalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    if (page < state.videos.size) {
+                        val video = state.videos[page]
+                        VideoPage(
+                            video = video,
+                            onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
+                        )
+                    }
                 }
             }
         }
+
+        BottomNavigationBar()
     }
 }
 
@@ -104,8 +112,7 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
         Column(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(end = 12.dp)
-                .navigationBarsPadding(),
+                .padding(end = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
@@ -141,7 +148,6 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 16.dp, end = 80.dp, bottom = 20.dp)
-                .navigationBarsPadding()
         ) {
             Text(
                 text = video.author,
