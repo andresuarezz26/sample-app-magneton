@@ -5,11 +5,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.myapplication.home.HomeScreen
+import com.example.myapplication.ui.screens.LogoutScreen
 import com.example.myapplication.ui.screens.SplashScreen
 
 object Routes {
     const val SPLASH = "splash"
     const val HOME = "home"
+    const val LOGOUT = "logout"
 }
 
 @Composable
@@ -29,6 +31,16 @@ fun NavigationGraph(navController: NavHostController) {
         }
         composable(Routes.HOME) {
             HomeScreen()
+        }
+        composable(Routes.LOGOUT) {
+            LogoutScreen(
+                onCancel = { navController.popBackStack() },
+                onConfirm = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGOUT) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }
