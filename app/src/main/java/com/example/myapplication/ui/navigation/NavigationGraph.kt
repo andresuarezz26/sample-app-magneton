@@ -30,7 +30,7 @@ fun NavigationGraph(navController: NavHostController) {
             )
         }
         composable(Routes.HOME) {
-            HomeScreen()
+            HomeScreen(onLogout = { navController.navigate(Routes.LOGOUT) })
         }
         composable(Routes.LOGOUT) {
             LogoutScreen(

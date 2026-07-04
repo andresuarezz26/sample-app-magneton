@@ -17,8 +17,11 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.myapplication.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,13 +38,13 @@ import com.example.myapplication.data.model.VideoItem
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(viewModel: HomeViewModel = viewModel(), onLogout: () -> Unit = {}) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    HomeContent(state = state, onIntent = viewModel::onIntent)
+    HomeContent(state = state, onIntent = viewModel::onIntent, onLogout = onLogout)
 }
 
 @Composable
-private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
+private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit, onLogout: () -> Unit) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
     Box(
@@ -63,7 +66,8 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
                     val video = state.videos[page]
                     VideoPage(
                         video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
+                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) },
+                        onLogout = onLogout
                     )
                 }
             }
@@ -72,7 +76,7 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
 }
 
 @Composable
-private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
+private fun VideoPage(video: VideoItem, onLike: () -> Unit, onLogout: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -166,6 +170,18 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
                 overflow = TextOverflow.Ellipsis
             )
         }
+
+        // Bottom right: Logout button
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .navigationBarsPadding()
+                .padding(end = 16.dp, bottom = 20.dp)
+        ) {
+            OutlinedButton(onClick = onLogout) {
+                Text(stringResource(R.string.logout_button))
+            }
+        }
     }
 }
 
@@ -206,7 +222,8 @@ private fun HomeScreenPreview() {
                     )
                 )
             ),
-            onIntent = {}
+            onIntent = {},
+            onLogout = {}
         )
     }
 }
