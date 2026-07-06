@@ -17,13 +17,20 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,11 +47,25 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
     HomeContent(state = state, onIntent = viewModel::onIntent)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
-    Box(
+    // VerticalPager's own drag gestures conflict with PullToRefreshBox's nested-scroll pull
+    // gesture on every page but the first, so only let unconsumed scroll bubble up to trigger
+    // a refresh while on page 0; on any other page swallow it to preserve page-swiping.
+    val pullToRefreshGate = remember(pagerState) {
+        object : NestedScrollConnection {
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                return if (pagerState.currentPage == 0) Offset.Zero else available
+            }
+        }
+    }
+
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { onIntent(HomeIntent.Refresh) },
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
@@ -57,7 +78,9 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
         } else {
             VerticalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(pullToRefreshGate)
             ) { page ->
                 if (page < state.videos.size) {
                     val video = state.videos[page]

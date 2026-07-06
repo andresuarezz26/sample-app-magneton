@@ -73,4 +73,40 @@ class HomeViewModelTest {
 
         assertEquals(videosBefore, viewModel.state.value.videos)
     }
+
+    @Test
+    fun `refresh sets isRefreshing true then false with refreshed videos`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        viewModel.onIntent(HomeIntent.Refresh)
+
+        assertEquals(true, viewModel.state.value.isRefreshing)
+
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertFalse(state.isRefreshing)
+        assertEquals(6, state.videos.size)
+    }
+
+    @Test
+    fun `refresh is a no-op while a refresh is already in flight`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        viewModel.onIntent(HomeIntent.Refresh)
+        assertEquals(true, viewModel.state.value.isRefreshing)
+
+        viewModel.onIntent(HomeIntent.Refresh)
+        assertEquals(true, viewModel.state.value.isRefreshing)
+
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertFalse(state.isRefreshing)
+        assertEquals(6, state.videos.size)
+    }
 }
