@@ -25,6 +25,8 @@ class HomeViewModel(
         when (intent) {
             HomeIntent.LoadFeed -> loadFeed()
             is HomeIntent.LikeVideo -> likeVideo(intent.videoId)
+            is HomeIntent.SelectTopic -> selectTopic(intent.topic)
+            HomeIntent.ResetFilter -> resetFilter()
         }
     }
 
@@ -44,5 +46,13 @@ class HomeViewModel(
                 }
             )
         }
+    }
+
+    private fun selectTopic(topic: String) {
+        _state.update { it.copy(selectedTopic = topic) }
+    }
+
+    private fun resetFilter() {
+        _state.update { it.copy(selectedTopic = null) }
     }
 }

@@ -8,14 +8,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +46,7 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 
 @Composable
 private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
-    val pagerState = rememberPagerState(pageCount = { state.videos.size })
+    val pagerState = rememberPagerState(pageCount = { state.filteredVideos.size })
 
     Box(
         modifier = Modifier
@@ -55,19 +59,76 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
                 color = Color.White
             )
         } else {
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                if (page < state.videos.size) {
-                    val video = state.videos[page]
-                    VideoPage(
-                        video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
-                    )
+            Column(modifier = Modifier.fillMaxSize()) {
+                TopicFilter(
+                    selectedTopic = state.selectedTopic,
+                    onTopicSelected = { topic ->
+                        if (topic == state.selectedTopic) {
+                            onIntent(HomeIntent.ResetFilter)
+                        } else {
+                            onIntent(HomeIntent.SelectTopic(topic))
+                        }
+                    }
+                )
+                VerticalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f)
+                ) { page ->
+                    if (page < state.filteredVideos.size) {
+                        val video = state.filteredVideos[page]
+                        VideoPage(
+                            video = video,
+                            onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TopicFilter(selectedTopic: String?, onTopicSelected: (String) -> Unit) {
+    val topics = listOf("Physics", "Biology", "Chemistry", "Neuroscience", "Climate", "Quantum", "All")
+
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Black.copy(alpha = 0.7f))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(topics) { topic ->
+            val isSelected = (topic == "All" && selectedTopic == null) || (topic == selectedTopic)
+            TopicChip(
+                topic = topic,
+                isSelected = isSelected,
+                onClick = { onTopicSelected(topic) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun TopicChip(topic: String, isSelected: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                if (isSelected) Color.White else Color.DarkGray
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = topic,
+            color = if (isSelected) Color.Black else Color.White,
+            fontSize = 13.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
     }
 }
 
@@ -202,9 +263,22 @@ private fun HomeScreenPreview() {
                         comments = 1203,
                         shares = 892,
                         music = "Cosmic Vibes — Science Beats",
-                        backgroundColorHex = 0xFF1A1A2E
+                        backgroundColorHex = 0xFF1A1A2E,
+                        topic = "Physics"
+                    ),
+                    VideoItem(
+                        id = "2",
+                        author = "@quantum_lab",
+                        description = "Schrodinger's cat explained in 60 seconds. Mind = blown!",
+                        likes = 92100,
+                        comments = 4521,
+                        shares = 3100,
+                        music = "Wave Function — Quantum Sounds",
+                        backgroundColorHex = 0xFF16213E,
+                        topic = "Quantum"
                     )
-                )
+                ),
+                selectedTopic = "Physics"
             ),
             onIntent = {}
         )
