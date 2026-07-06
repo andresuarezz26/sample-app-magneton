@@ -73,4 +73,51 @@ class HomeViewModelTest {
 
         assertEquals(videosBefore, viewModel.state.value.videos)
     }
+
+    @Test
+    fun `toggling follow adds author to followedAuthors and toggling again removes it`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        val author = viewModel.state.value.videos.first().author
+
+        viewModel.onIntent(HomeIntent.ToggleFollow(author))
+        advanceUntilIdle()
+        assertEquals(setOf(author), viewModel.state.value.followedAuthors)
+
+        viewModel.onIntent(HomeIntent.ToggleFollow(author))
+        advanceUntilIdle()
+        assertEquals(emptySet<String>(), viewModel.state.value.followedAuthors)
+    }
+
+    @Test
+    fun `Following tab shows only videos from followed authors`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        val followedAuthor = viewModel.state.value.videos[1].author
+        viewModel.onIntent(HomeIntent.ToggleFollow(followedAuthor))
+        advanceUntilIdle()
+
+        viewModel.onIntent(HomeIntent.SelectTab(FeedTab.FOLLOWING))
+
+        val state = viewModel.state.value
+        assertEquals(FeedTab.FOLLOWING, state.selectedTab)
+        assertEquals(listOf(followedAuthor), state.displayedVideos.map { it.author })
+    }
+
+    @Test
+    fun `Following tab with no followed authors yields an empty displayed list`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        viewModel.onIntent(HomeIntent.SelectTab(FeedTab.FOLLOWING))
+
+        val state = viewModel.state.value
+        assertEquals(FeedTab.FOLLOWING, state.selectedTab)
+        assertEquals(emptyList<Any>(), state.displayedVideos)
+    }
 }
