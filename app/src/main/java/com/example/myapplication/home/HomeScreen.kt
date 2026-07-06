@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,64 +43,112 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 
 @Composable
 private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
-    val pagerState = rememberPagerState(pageCount = { state.videos.size })
+    val displayedVideos = state.displayedVideos
+    val pagerState = rememberPagerState(pageCount = { displayedVideos.size })
+    val showEmptyFollowing = state.selectedTab == FeedTab.FOLLOWING && displayedVideos.isEmpty()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        if (state.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White
-            )
-        } else {
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                if (page < state.videos.size) {
-                    val video = state.videos[page]
-                    VideoPage(
-                        video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
-                    )
+        when {
+            state.isLoading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.White
+                )
+            }
+            showEmptyFollowing -> {
+                EmptyFollowingState(modifier = Modifier.align(Alignment.Center))
+            }
+            else -> {
+                VerticalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    if (page < displayedVideos.size) {
+                        val video = displayedVideos[page]
+                        VideoPage(
+                            video = video,
+                            isFollowed = video.author in state.followedAuthors,
+                            onLike = { onIntent(HomeIntent.LikeVideo(video.id)) },
+                            onToggleFollow = { onIntent(HomeIntent.ToggleFollow(video.author)) }
+                        )
+                    }
                 }
             }
         }
+
+        FeedTabsRow(
+            selectedTab = state.selectedTab,
+            onSelectTab = { onIntent(HomeIntent.SelectTab(it)) },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 8.dp)
+        )
     }
 }
 
 @Composable
-private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
+private fun FeedTabsRow(
+    selectedTab: FeedTab,
+    onSelectTab: (FeedTab) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        FeedTabLabel(
+            text = "Following",
+            isSelected = selectedTab == FeedTab.FOLLOWING,
+            onClick = { onSelectTab(FeedTab.FOLLOWING) }
+        )
+        FeedTabLabel(
+            text = "For You",
+            isSelected = selectedTab == FeedTab.FOR_YOU,
+            onClick = { onSelectTab(FeedTab.FOR_YOU) }
+        )
+    }
+}
+
+@Composable
+private fun FeedTabLabel(text: String, isSelected: Boolean, onClick: () -> Unit) {
+    Text(
+        text = text,
+        color = if (isSelected) Color.White else Color.White.copy(alpha = 0.6f),
+        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+        fontSize = 15.sp,
+        modifier = Modifier.clickable(onClick = onClick)
+    )
+}
+
+@Composable
+private fun EmptyFollowingState(modifier: Modifier = Modifier) {
+    Text(
+        text = "Follow researchers to see their papers here",
+        color = Color.White.copy(alpha = 0.8f),
+        fontSize = 16.sp,
+        textAlign = TextAlign.Center,
+        modifier = modifier.padding(horizontal = 32.dp)
+    )
+}
+
+@Composable
+private fun VideoPage(
+    video: VideoItem,
+    isFollowed: Boolean,
+    onLike: () -> Unit,
+    onToggleFollow: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(video.backgroundColorHex))
     ) {
-        // Top nav: Following / For You tabs
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .statusBarsPadding()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Following",
-                color = Color.White.copy(alpha = 0.6f),
-                fontSize = 15.sp
-            )
-            Text(
-                text = "For You",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
-            )
-        }
-
         // Right action rail
         Column(
             modifier = Modifier
@@ -119,6 +168,8 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
             ) {
                 Text(text = video.author.take(2).uppercase(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
+
+            FollowToggle(isFollowed = isFollowed, onClick = onToggleFollow)
 
             ActionItem(icon = "❤️", count = formatCount(video.likes), onClick = onLike)
             ActionItem(icon = "💬", count = formatCount(video.comments), onClick = {})
@@ -170,6 +221,24 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
 }
 
 @Composable
+private fun FollowToggle(isFollowed: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(if (isFollowed) Color.White.copy(alpha = 0.15f) else Color(0xFFFE2C55))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = if (isFollowed) "Following" else "Follow",
+            color = Color.White,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 private fun ActionItem(icon: String, count: String, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -205,6 +274,31 @@ private fun HomeScreenPreview() {
                         backgroundColorHex = 0xFF1A1A2E
                     )
                 )
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1A2E)
+@Composable
+private fun HomeScreenEmptyFollowingPreview() {
+    MyApplicationTheme {
+        HomeContent(
+            state = HomeUiState(
+                videos = listOf(
+                    VideoItem(
+                        id = "1",
+                        author = "@astro_facts",
+                        description = "Did you know black holes emit Hawking radiation? The universe is wild!",
+                        likes = 48200,
+                        comments = 1203,
+                        shares = 892,
+                        music = "Cosmic Vibes — Science Beats",
+                        backgroundColorHex = 0xFF1A1A2E
+                    )
+                ),
+                selectedTab = FeedTab.FOLLOWING
             ),
             onIntent = {}
         )
