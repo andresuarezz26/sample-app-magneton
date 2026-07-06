@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,13 +36,20 @@ import com.example.myapplication.data.model.VideoItem
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(
+    viewModel: HomeViewModel = viewModel(),
+    onVideoCardClick: (List<VideoItem>, Int) -> Unit = { _, _ -> }
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    HomeContent(state = state, onIntent = viewModel::onIntent)
+    HomeContent(state = state, onIntent = viewModel::onIntent, onVideoCardClick = onVideoCardClick)
 }
 
 @Composable
-private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
+private fun HomeContent(
+    state: HomeUiState,
+    onIntent: (HomeIntent) -> Unit,
+    onVideoCardClick: (List<VideoItem>, Int) -> Unit
+) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
     Box(
@@ -63,7 +71,10 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
                     val video = state.videos[page]
                     VideoPage(
                         video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
+                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) },
+                        onCardClick = {
+                            onVideoCardClick(state.videos, page)
+                        }
                     )
                 }
             }
@@ -72,18 +83,25 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
 }
 
 @Composable
-private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
+private fun VideoPage(
+    video: VideoItem,
+    onLike: () -> Unit,
+    onCardClick: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(video.backgroundColorHex))
+            .clickable(onClick = onCardClick)
+            .testTag("paperCard")
     ) {
         // Top nav: Following / For You tabs
         Row(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .statusBarsPadding()
-                .padding(top = 8.dp),
+                .padding(top = 8.dp)
+                .testTag("nav_discover"),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -206,7 +224,8 @@ private fun HomeScreenPreview() {
                     )
                 )
             ),
-            onIntent = {}
+            onIntent = {},
+            onVideoCardClick = { _, _ -> }
         )
     }
 }
