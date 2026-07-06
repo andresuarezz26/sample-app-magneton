@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,7 +36,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.data.model.VideoItem
+import com.example.myapplication.saved.SavedPapersScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
+
+private enum class HomeTab { FOR_YOU, SAVED }
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
@@ -42,6 +49,7 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 
 @Composable
 private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
+    var selectedTab by remember { mutableStateOf(HomeTab.FOR_YOU) }
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
     Box(
@@ -49,25 +57,67 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        if (state.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White
-            )
-        } else {
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                if (page < state.videos.size) {
-                    val video = state.videos[page]
-                    VideoPage(
-                        video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
+        when (selectedTab) {
+            HomeTab.FOR_YOU -> {
+                if (state.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color.White
                     )
+                } else {
+                    VerticalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        if (page < state.videos.size) {
+                            val video = state.videos[page]
+                            VideoPage(
+                                video = video,
+                                onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
+                            )
+                        }
+                    }
                 }
             }
+            HomeTab.SAVED -> SavedPapersScreen()
         }
+
+        TopNavBar(
+            selectedTab = selectedTab,
+            onTabSelected = { selectedTab = it }
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.TopNavBar(selectedTab: HomeTab, onTabSelected: (HomeTab) -> Unit) {
+    Row(
+        modifier = Modifier
+            .align(Alignment.TopCenter)
+            .statusBarsPadding()
+            .padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Following",
+            color = Color.White.copy(alpha = 0.6f),
+            fontSize = 15.sp
+        )
+        Text(
+            text = "For You",
+            color = if (selectedTab == HomeTab.FOR_YOU) Color.White else Color.White.copy(alpha = 0.6f),
+            fontWeight = if (selectedTab == HomeTab.FOR_YOU) FontWeight.Bold else FontWeight.Normal,
+            fontSize = 15.sp,
+            modifier = Modifier.clickable { onTabSelected(HomeTab.FOR_YOU) }
+        )
+        Text(
+            text = "Saved",
+            color = if (selectedTab == HomeTab.SAVED) Color.White else Color.White.copy(alpha = 0.6f),
+            fontWeight = if (selectedTab == HomeTab.SAVED) FontWeight.Bold else FontWeight.Normal,
+            fontSize = 15.sp,
+            modifier = Modifier.clickable { onTabSelected(HomeTab.SAVED) }
+        )
     }
 }
 
@@ -78,28 +128,6 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
             .fillMaxSize()
             .background(Color(video.backgroundColorHex))
     ) {
-        // Top nav: Following / For You tabs
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .statusBarsPadding()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Following",
-                color = Color.White.copy(alpha = 0.6f),
-                fontSize = 15.sp
-            )
-            Text(
-                text = "For You",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
-            )
-        }
-
         // Right action rail
         Column(
             modifier = Modifier
