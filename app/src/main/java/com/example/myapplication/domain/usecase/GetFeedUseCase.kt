@@ -19,7 +19,8 @@ class GetFeedUseCase(
                 comments = 1203,
                 shares = 892,
                 music = "Cosmic Vibes — Science Beats",
-                backgroundColorHex = 0xFF1A1A2E
+                backgroundColorHex = 0xFF1A1A2E,
+                topic = "Physics"
             ),
             VideoItem(
                 id = "2",
@@ -29,7 +30,8 @@ class GetFeedUseCase(
                 comments = 4521,
                 shares = 3100,
                 music = "Wave Function — Quantum Sounds",
-                backgroundColorHex = 0xFF16213E
+                backgroundColorHex = 0xFF16213E,
+                topic = "Quantum Physics"
             ),
             VideoItem(
                 id = "3",
@@ -39,7 +41,8 @@ class GetFeedUseCase(
                 comments = 2890,
                 shares = 5601,
                 music = "DNA Sequence — Bio Beats",
-                backgroundColorHex = 0xFF0F3460
+                backgroundColorHex = 0xFF0F3460,
+                topic = "Biology"
             ),
             VideoItem(
                 id = "4",
@@ -49,7 +52,8 @@ class GetFeedUseCase(
                 comments = 987,
                 shares = 2341,
                 music = "Ocean Drift — Nature Sounds",
-                backgroundColorHex = 0xFF1B4332
+                backgroundColorHex = 0xFF1B4332,
+                topic = "Earth Science"
             ),
             VideoItem(
                 id = "5",
@@ -59,7 +63,8 @@ class GetFeedUseCase(
                 comments = 6200,
                 shares = 8900,
                 music = "Neural Pulse — Brain Beats",
-                backgroundColorHex = 0xFF3D0C11
+                backgroundColorHex = 0xFF3D0C11,
+                topic = "Neuroscience"
             ),
             VideoItem(
                 id = "6",
@@ -69,7 +74,8 @@ class GetFeedUseCase(
                 comments = 9800,
                 shares = 14200,
                 music = "Molecule Mix — Lab Sounds",
-                backgroundColorHex = 0xFF2D3561
+                backgroundColorHex = 0xFF2D3561,
+                topic = "Chemistry"
             )
         )
     }

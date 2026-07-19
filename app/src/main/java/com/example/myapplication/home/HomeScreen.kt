@@ -5,20 +5,24 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +48,12 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
+    LaunchedEffect(state.selectedTopic) {
+        if (state.videos.isNotEmpty()) {
+            pagerState.scrollToPage(0)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -67,7 +77,64 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
                     )
                 }
             }
+
+            TopicChipRow(
+                topics = state.topics,
+                selectedTopic = state.selectedTopic,
+                onSelectTopic = { topic -> onIntent(HomeIntent.SelectTopic(topic)) },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(top = 8.dp)
+            )
         }
+    }
+}
+
+@Composable
+private fun TopicChipRow(
+    topics: List<String>,
+    selectedTopic: String?,
+    onSelectTopic: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        item {
+            TopicChip(
+                label = "For You",
+                selected = selectedTopic == null,
+                onClick = { onSelectTopic(null) }
+            )
+        }
+        items(topics) { topic ->
+            TopicChip(
+                label = topic,
+                selected = selectedTopic == topic,
+                onClick = { onSelectTopic(topic) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun TopicChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (selected) Color.White else Color.White.copy(alpha = 0.2f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = label,
+            color = if (selected) Color.Black else Color.White,
+            fontSize = 13.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+        )
     }
 }
 
@@ -78,28 +145,6 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
             .fillMaxSize()
             .background(Color(video.backgroundColorHex))
     ) {
-        // Top nav: Following / For You tabs
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .statusBarsPadding()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Following",
-                color = Color.White.copy(alpha = 0.6f),
-                fontSize = 15.sp
-            )
-            Text(
-                text = "For You",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
-            )
-        }
-
         // Right action rail
         Column(
             modifier = Modifier
@@ -202,7 +247,8 @@ private fun HomeScreenPreview() {
                         comments = 1203,
                         shares = 892,
                         music = "Cosmic Vibes — Science Beats",
-                        backgroundColorHex = 0xFF1A1A2E
+                        backgroundColorHex = 0xFF1A1A2E,
+                        topic = "Physics"
                     )
                 )
             ),
