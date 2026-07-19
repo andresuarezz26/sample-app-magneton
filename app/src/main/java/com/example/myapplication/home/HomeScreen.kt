@@ -24,6 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,7 +54,9 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
     ) {
         if (state.isLoading) {
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .testTag("loading_indicator"),
                 color = Color.White
             )
         } else {
@@ -120,7 +125,14 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
                 Text(text = video.author.take(2).uppercase(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
 
-            ActionItem(icon = "❤️", count = formatCount(video.likes), onClick = onLike)
+            ActionItem(
+                icon = "❤️",
+                count = formatCount(video.likes),
+                onClick = onLike,
+                itemTag = "like_button",
+                countTag = "like_count",
+                countContentDescription = "likes_${video.likes}"
+            )
             ActionItem(icon = "💬", count = formatCount(video.comments), onClick = {})
             ActionItem(icon = "➡️", count = formatCount(video.shares), onClick = {})
 
@@ -170,14 +182,37 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
 }
 
 @Composable
-private fun ActionItem(icon: String, count: String, onClick: () -> Unit) {
+private fun ActionItem(
+    icon: String,
+    count: String,
+    onClick: () -> Unit,
+    itemTag: String? = null,
+    countTag: String? = null,
+    countContentDescription: String? = null
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .let { if (itemTag != null) it.testTag(itemTag) else it }
     ) {
         Text(text = icon, fontSize = 30.sp)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(text = count, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Text(
+            text = count,
+            color = Color.White,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier
+                .let { if (countTag != null) it.testTag(countTag) else it }
+                .let {
+                    if (countContentDescription != null) {
+                        it.semantics { contentDescription = countContentDescription }
+                    } else {
+                        it
+                    }
+                }
+        )
     }
 }
 
