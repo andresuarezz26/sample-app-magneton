@@ -35,13 +35,20 @@ import com.example.myapplication.data.model.VideoItem
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(
+    viewModel: HomeViewModel = viewModel(),
+    onLogoutClick: () -> Unit = {}
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    HomeContent(state = state, onIntent = viewModel::onIntent)
+    HomeContent(state = state, onIntent = viewModel::onIntent, onLogoutClick = onLogoutClick)
 }
 
 @Composable
-private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
+internal fun HomeContent(
+    state: HomeUiState,
+    onIntent: (HomeIntent) -> Unit,
+    onLogoutClick: () -> Unit = {}
+) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
     Box(
@@ -68,6 +75,27 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
                 }
             }
         }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 24.dp)
+                .navigationBarsPadding()
+        ) {
+            LogoutButton(onClick = onLogoutClick)
+        }
+    }
+}
+
+@Composable
+private fun LogoutButton(onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
+        Text(text = "🚪", fontSize = 26.sp)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(text = "Logout", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -206,7 +234,8 @@ private fun HomeScreenPreview() {
                     )
                 )
             ),
-            onIntent = {}
+            onIntent = {},
+            onLogoutClick = {}
         )
     }
 }
