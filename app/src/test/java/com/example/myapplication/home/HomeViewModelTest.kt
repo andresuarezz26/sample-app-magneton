@@ -73,4 +73,17 @@ class HomeViewModelTest {
 
         assertEquals(videosBefore, viewModel.state.value.videos)
     }
+
+    @Test
+    fun `logout intent does not crash and leaves existing state unchanged`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        val stateBefore = viewModel.state.value
+
+        viewModel.onIntent(HomeIntent.Logout)
+
+        assertEquals(stateBefore, viewModel.state.value)
+    }
 }

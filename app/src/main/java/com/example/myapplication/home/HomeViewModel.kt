@@ -25,6 +25,7 @@ class HomeViewModel(
         when (intent) {
             HomeIntent.LoadFeed -> loadFeed()
             is HomeIntent.LikeVideo -> likeVideo(intent.videoId)
+            HomeIntent.Logout -> logout()
         }
     }
 
@@ -44,5 +45,9 @@ class HomeViewModel(
                 }
             )
         }
+    }
+
+    private fun logout() {
+        // TODO: wire to real sign-out / navigation once an auth flow and navigation graph exist
     }
 }
