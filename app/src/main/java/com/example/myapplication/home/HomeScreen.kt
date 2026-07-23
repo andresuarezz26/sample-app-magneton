@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,7 +43,7 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 }
 
 @Composable
-private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
+internal fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
     Box(
@@ -67,6 +69,17 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
                     )
                 }
             }
+        }
+
+        TextButton(
+            onClick = { onIntent(HomeIntent.Logout) },
+            colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .navigationBarsPadding()
+                .padding(16.dp)
+        ) {
+            Text("Logout")
         }
     }
 }
