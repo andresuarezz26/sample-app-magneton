@@ -73,4 +73,18 @@ class HomeViewModelTest {
 
         assertEquals(videosBefore, viewModel.state.value.videos)
     }
+
+    @Test
+    fun `refresh repopulates feed and isRefreshing ends false`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        viewModel.onIntent(HomeIntent.Refresh)
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertEquals(6, state.videos.size)
+        assertFalse(state.isRefreshing)
+    }
 }
