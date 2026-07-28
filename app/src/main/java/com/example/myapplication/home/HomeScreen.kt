@@ -35,16 +35,26 @@ import com.example.myapplication.data.model.VideoItem
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel(), onUploadClick: () -> Unit = {}) {
+fun HomeScreen(
+    viewModel: HomeViewModel = viewModel(),
+    onUploadClick: () -> Unit = {},
+    onCommentsClick: () -> Unit = {}
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    HomeContent(state = state, onIntent = viewModel::onIntent, onUploadClick = onUploadClick)
+    HomeContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onUploadClick = onUploadClick,
+        onCommentsClick = onCommentsClick
+    )
 }
 
 @Composable
 private fun HomeContent(
     state: HomeUiState,
     onIntent: (HomeIntent) -> Unit,
-    onUploadClick: () -> Unit = {}
+    onUploadClick: () -> Unit = {},
+    onCommentsClick: () -> Unit = {}
 ) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
@@ -67,7 +77,8 @@ private fun HomeContent(
                     val video = state.videos[page]
                     VideoPage(
                         video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
+                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) },
+                        onComments = onCommentsClick
                     )
                 }
             }
@@ -86,7 +97,7 @@ private fun HomeContent(
 }
 
 @Composable
-private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
+private fun VideoPage(video: VideoItem, onLike: () -> Unit, onComments: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -135,7 +146,7 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
             }
 
             ActionItem(icon = "❤️", count = formatCount(video.likes), onClick = onLike)
-            ActionItem(icon = "💬", count = formatCount(video.comments), onClick = {})
+            ActionItem(icon = "💬", count = formatCount(video.comments), onClick = onComments)
             ActionItem(icon = "➡️", count = formatCount(video.shares), onClick = {})
 
             // Music disc
