@@ -5,11 +5,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
-class GetFeedUseCase(
+open class GetFeedUseCase(
     private val ioDispatcher: CoroutineContext = Dispatchers.IO
 ) {
 
-    suspend operator fun invoke(): List<VideoItem> = withContext(ioDispatcher) {
+    open suspend operator fun invoke(): List<VideoItem> = withContext(ioDispatcher) {
         listOf(
             VideoItem(
                 id = "1",
