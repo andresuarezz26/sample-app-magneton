@@ -35,13 +35,17 @@ import com.example.myapplication.data.model.VideoItem
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(viewModel: HomeViewModel = viewModel(), onUploadClick: () -> Unit = {}) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    HomeContent(state = state, onIntent = viewModel::onIntent)
+    HomeContent(state = state, onIntent = viewModel::onIntent, onUploadClick = onUploadClick)
 }
 
 @Composable
-private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
+private fun HomeContent(
+    state: HomeUiState,
+    onIntent: (HomeIntent) -> Unit,
+    onUploadClick: () -> Unit = {}
+) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
     Box(
@@ -68,6 +72,16 @@ private fun HomeContent(state: HomeUiState, onIntent: (HomeIntent) -> Unit) {
                 }
             }
         }
+
+        Text(
+            text = "📤",
+            fontSize = 24.sp,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(top = 8.dp, end = 16.dp)
+                .clickable { onUploadClick() }
+        )
     }
 }
 
