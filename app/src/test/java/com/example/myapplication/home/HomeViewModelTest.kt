@@ -4,7 +4,10 @@ import com.example.myapplication.data.model.VideoItem
 import com.example.myapplication.domain.usecase.GetFeedUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -12,6 +15,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -72,5 +76,27 @@ class HomeViewModelTest {
         viewModel.onIntent(HomeIntent.LikeVideo("unknown-id-999"))
 
         assertEquals(videosBefore, viewModel.state.value.videos)
+    }
+
+    @Test
+    fun `loading the feed emits isLoading true before the loaded state`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+
+        // Collect eagerly before any virtual time advances: Main is a StandardTestDispatcher,
+        // so the load started in init{} has not run yet and the pristine state is still current.
+        val emissions = mutableListOf<HomeUiState>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.state.toList(emissions)
+        }
+
+        advanceUntilIdle()
+
+        // The spinner state must be reached before the data arrives.
+        assertTrue(emissions.any { it.isLoading && it.videos.isEmpty() })
+
+        val last = emissions.last()
+        assertFalse(last.isLoading)
+        assertEquals(6, last.videos.size)
     }
 }
