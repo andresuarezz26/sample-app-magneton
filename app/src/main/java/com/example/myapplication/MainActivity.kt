@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.example.myapplication.home.HomeScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.upload.UploadScreen
@@ -33,7 +34,7 @@ class MainActivity : ComponentActivity() {
                         Screen.Upload -> UploadScreen(onBack = { currentScreen = Screen.Home })
                     }
                     Text(
-                        text = "Hello World",
+                        text = stringResource(R.string.hello_world),
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(16.dp)
