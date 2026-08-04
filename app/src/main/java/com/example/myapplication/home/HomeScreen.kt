@@ -1,6 +1,7 @@
 package com.example.myapplication.home
 
 import androidx.compose.foundation.background
+import com.example.myapplication.home.HomeScreenDimensions
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -78,11 +79,11 @@ private fun HomeContent(
         Text(
             text = stringResource(R.string.home_welcome_message),
             color = Color.White,
-            fontSize = 14.sp,
+            fontSize = HomeScreenDimensions.welcomeMessageFontSize,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .statusBarsPadding()
-                .padding(top = 8.dp, start = 16.dp)
+                .padding(top = HomeScreenDimensions.welcomeMessageTopPadding, start = HomeScreenDimensions.welcomeMessageStartPadding)
         )
 
         Text(
