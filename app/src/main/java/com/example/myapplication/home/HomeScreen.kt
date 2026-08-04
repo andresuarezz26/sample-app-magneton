@@ -74,6 +74,17 @@ private fun HomeContent(
         }
 
         Text(
+            text = "Hello World",
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 40.dp)
+        )
+
+        Text(
             text = "📤",
             fontSize = 24.sp,
             modifier = Modifier
