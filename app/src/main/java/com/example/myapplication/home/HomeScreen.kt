@@ -74,6 +74,16 @@ private fun HomeContent(
         }
 
         Text(
+            text = "Welcome to the feed",
+            color = Color.White,
+            fontSize = 14.sp,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+                .padding(top = 8.dp, start = 16.dp)
+        )
+
+        Text(
             text = "📤",
             fontSize = 24.sp,
             modifier = Modifier
