@@ -1,6 +1,7 @@
 package com.example.myapplication.home
 
 import androidx.compose.foundation.background
+import com.example.myapplication.home.HomeScreenDimensions
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.R
 import com.example.myapplication.data.model.VideoItem
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
@@ -72,6 +75,16 @@ private fun HomeContent(
                 }
             }
         }
+
+        Text(
+            text = stringResource(R.string.home_welcome_message),
+            color = Color.White,
+            fontSize = HomeScreenDimensions.welcomeMessageFontSize,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+                .padding(top = HomeScreenDimensions.welcomeMessageTopPadding, start = HomeScreenDimensions.welcomeMessageStartPadding)
+        )
 
         Text(
             text = "📤",
