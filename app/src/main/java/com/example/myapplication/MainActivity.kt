@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -33,12 +34,14 @@ class MainActivity : ComponentActivity() {
                         Screen.Home -> HomeScreen(onUploadClick = { currentScreen = Screen.Upload })
                         Screen.Upload -> UploadScreen(onBack = { currentScreen = Screen.Home })
                     }
-                    Text(
-                        text = stringResource(R.string.hello_world),
+                    Column(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(16.dp)
-                    )
+                    ) {
+                        Text(text = stringResource(R.string.hello_world))
+                        Text(text = stringResource(R.string.whats_up_man))
+                    }
                 }
             }
         }
