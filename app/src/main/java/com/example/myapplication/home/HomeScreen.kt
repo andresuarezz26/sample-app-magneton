@@ -53,6 +53,16 @@ private fun HomeContent(
             .fillMaxSize()
             .background(Color.Black)
     ) {
+        Text(
+            text = "HelloWorld",
+            color = Color.Black,
+            fontSize = 20.sp,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+                .padding(top = 8.dp, start = 16.dp)
+        )
+
         if (state.isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
