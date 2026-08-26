@@ -54,8 +54,8 @@ private fun HomeContent(
             .background(Color.Black)
     ) {
         Text(
-            text = "Hello World",
-            color = Color.White,
+            text = "HelloWorld",
+            color = Color.Black,
             fontSize = 20.sp,
             modifier = Modifier
                 .align(Alignment.TopStart)
