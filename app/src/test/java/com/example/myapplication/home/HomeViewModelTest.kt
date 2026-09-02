@@ -122,12 +122,12 @@ class HomeViewModelTest {
     fun `liking the same video twice increments likes by 2`() = runTest(testDispatcher) {
         val viewModel = HomeViewModel(GetFeedUseCase(testDispatcher))
         advanceUntilIdle()
-        val before = viewModel.state.value.videos.first { it.id == "3" }.likes
+        val likesBefore = viewModel.state.value.videos.first { it.id == "3" }.likes
 
         viewModel.onIntent(HomeIntent.LikeVideo("3"))
         viewModel.onIntent(HomeIntent.LikeVideo("3"))
 
-        assertEquals(before + 2, viewModel.state.value.videos.first { it.id == "3" }.likes)
+        assertEquals(likesBefore + 2, viewModel.state.value.videos.first { it.id == "3" }.likes)
     }
 
     @Test
