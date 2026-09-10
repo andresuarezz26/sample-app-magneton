@@ -3,6 +3,7 @@ package com.example.myapplication.upload
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.domain.usecase.UploadPhotosUseCase
+import com.example.myapplication.domain.usecase.UploadPhotosUseCaseImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,7 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class UploadViewModel(
-    private val uploadPhotosUseCase: UploadPhotosUseCase = UploadPhotosUseCase()
+    private val uploadPhotosUseCase: UploadPhotosUseCase = UploadPhotosUseCaseImpl()
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(UploadUiState())
