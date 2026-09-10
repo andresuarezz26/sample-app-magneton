@@ -1,6 +1,7 @@
 package com.example.myapplication.upload
 
 import com.example.myapplication.domain.usecase.UploadPhotosUseCase
+import com.example.myapplication.domain.usecase.UploadPhotosUseCaseImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -18,7 +19,7 @@ import org.junit.Test
 
 private class FakeUploadPhotosUseCase(
     var result: Result<Unit> = Result.success(Unit)
-) : UploadPhotosUseCase() {
+) : UploadPhotosUseCase {
     val receivedCalls = mutableListOf<List<String>>()
     override suspend fun invoke(photoUris: List<String>): Result<Unit> {
         receivedCalls += photoUris
@@ -43,7 +44,7 @@ class UploadViewModelTest {
 
     @Test
     fun `selecting photos populates selectedPhotos`() = runTest(testDispatcher) {
-        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        val viewModel = UploadViewModel(UploadPhotosUseCaseImpl(testDispatcher))
 
         viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri1", "uri2")))
 
@@ -52,7 +53,7 @@ class UploadViewModelTest {
 
     @Test
     fun `removing a photo filters it out of selectedPhotos`() = runTest(testDispatcher) {
-        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        val viewModel = UploadViewModel(UploadPhotosUseCaseImpl(testDispatcher))
         viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri1", "uri2")))
 
         viewModel.onIntent(UploadIntent.RemovePhoto("uri1"))
@@ -62,7 +63,7 @@ class UploadViewModelTest {
 
     @Test
     fun `uploading with a non-empty selection sets isUploading then uploadSuccess`() = runTest(testDispatcher) {
-        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        val viewModel = UploadViewModel(UploadPhotosUseCaseImpl(testDispatcher))
         viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri1")))
 
         viewModel.onIntent(UploadIntent.UploadPhotos)
@@ -77,7 +78,7 @@ class UploadViewModelTest {
 
     @Test
     fun `uploading with an empty selection is a no-op`() = runTest(testDispatcher) {
-        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        val viewModel = UploadViewModel(UploadPhotosUseCaseImpl(testDispatcher))
 
         viewModel.onIntent(UploadIntent.UploadPhotos)
         advanceUntilIdle()
@@ -88,7 +89,7 @@ class UploadViewModelTest {
 
     @Test
     fun `starting over resets state after a successful upload`() = runTest(testDispatcher) {
-        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        val viewModel = UploadViewModel(UploadPhotosUseCaseImpl(testDispatcher))
         viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri1")))
         viewModel.onIntent(UploadIntent.UploadPhotos)
         advanceUntilIdle()
@@ -100,7 +101,7 @@ class UploadViewModelTest {
 
     @Test
     fun `selecting the same photo twice keeps a single entry`() = runTest(testDispatcher) {
-        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        val viewModel = UploadViewModel(UploadPhotosUseCaseImpl(testDispatcher))
         viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri1", "uri2")))
 
         viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri2", "uri3")))
@@ -110,7 +111,7 @@ class UploadViewModelTest {
 
     @Test
     fun `removing an unknown photo leaves selectedPhotos unchanged`() = runTest(testDispatcher) {
-        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        val viewModel = UploadViewModel(UploadPhotosUseCaseImpl(testDispatcher))
         viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri1")))
 
         viewModel.onIntent(UploadIntent.RemovePhoto("nope"))
@@ -204,7 +205,7 @@ class UploadViewModelTest {
 
     @Test
     fun `dismissing error when there is none is a no-op`() = runTest(testDispatcher) {
-        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        val viewModel = UploadViewModel(UploadPhotosUseCaseImpl(testDispatcher))
 
         viewModel.onIntent(UploadIntent.DismissError)
 

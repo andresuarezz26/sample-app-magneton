@@ -5,11 +5,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
-open class UploadPhotosUseCase(
-    private val ioDispatcher: CoroutineContext = Dispatchers.IO
-) {
+interface UploadPhotosUseCase {
+    suspend operator fun invoke(photoUris: List<String>): Result<Unit>
+}
 
-    open suspend operator fun invoke(photoUris: List<String>): Result<Unit> = withContext(ioDispatcher) {
+class UploadPhotosUseCaseImpl(
+    private val ioDispatcher: CoroutineContext = Dispatchers.IO
+) : UploadPhotosUseCase {
+
+    override suspend operator fun invoke(photoUris: List<String>): Result<Unit> = withContext(ioDispatcher) {
         delay(1200)
         Result.success(Unit)
     }
