@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -85,5 +86,30 @@ class UploadViewModelTest {
         viewModel.onIntent(UploadIntent.StartOver)
 
         assertEquals(UploadUiState(), viewModel.state.value)
+    }
+
+    @Test
+    fun `selecting photos ignores uris already in the selection`() = runTest(testDispatcher) {
+        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri1", "uri2")))
+
+        viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri2", "uri3", "uri3")))
+
+        assertEquals(listOf("uri1", "uri2", "uri3"), viewModel.state.value.selectedPhotos)
+    }
+
+    @Test
+    fun `dismissing error clears errorMessage and keeps selected photos`() = runTest(testDispatcher) {
+        val viewModel = UploadViewModel(UploadPhotosUseCase(testDispatcher))
+        viewModel.onIntent(UploadIntent.PhotosSelected(listOf("uri1", "uri2")))
+        val stateBefore = viewModel.state.value
+
+        viewModel.onIntent(UploadIntent.DismissError)
+
+        val stateAfter = viewModel.state.value
+        assertNull(stateAfter.errorMessage)
+        assertEquals(stateBefore.selectedPhotos, stateAfter.selectedPhotos)
+        assertFalse(stateAfter.isUploading)
+        assertFalse(stateAfter.uploadSuccess)
     }
 }
