@@ -88,7 +88,7 @@ private fun HomeContent(
         Text(
             text = stringResource(R.string.hello_world),
             color = Color.White,
-            fontSize = 16.sp,
+            fontSize = 18.sp,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .statusBarsPadding()
