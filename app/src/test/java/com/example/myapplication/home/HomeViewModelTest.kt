@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -15,6 +14,8 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -35,9 +36,10 @@ class HomeViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun TestScope.createViewModel(
-        ioDispatcher: CoroutineContext = testDispatcher
-    ) = HomeViewModel(GetFeedUseCase(ioDispatcher))
+    private fun createViewModel(
+        ioDispatcher: CoroutineContext = testDispatcher,
+        getFeedUseCase: GetFeedUseCase = GetFeedUseCase(ioDispatcher)
+    ) = HomeViewModel(getFeedUseCase)
 
     @Test
     fun `initial load populates feed with 6 videos and isLoading is false`() = runTest(testDispatcher) {
@@ -230,4 +232,58 @@ class HomeViewModelTest {
         val after = viewModel.state.value.videos.first { it.id == targetId }
         assertEquals(before.copy(likes = before.likes + 1), after)
     }
+
+    @Test
+    fun `loading feed error sets error message in state`() = runTest(testDispatcher) {
+        val failingUseCase = object : GetFeedUseCase(testDispatcher) {
+            override suspend fun invoke(): List<VideoItem> = throw Exception("Network error")
+        }
+        val viewModel = createViewModel(getFeedUseCase = failingUseCase)
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertTrue(state.videos.isEmpty())
+        assertFalse(state.isLoading)
+        assertEquals("Network error", state.error)
+    }
+
+    @Test
+    fun `retry clears error and reloads feed`() = runTest(testDispatcher) {
+        var shouldFail = true
+        val flakingUseCase = object : GetFeedUseCase(testDispatcher) {
+            override suspend fun invoke(): List<VideoItem> =
+                if (shouldFail) throw Exception("Temporary error") else GetFeedUseCase(testDispatcher).invoke()
+        }
+        val viewModel = createViewModel(getFeedUseCase = flakingUseCase)
+        advanceUntilIdle()
+
+        assertEquals("Temporary error", viewModel.state.value.error)
+
+        shouldFail = false
+        viewModel.onIntent(HomeIntent.Retry)
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertNull(state.error)
+        assertTrue(state.videos.isNotEmpty())
+    }
+
+    @Test
+    fun `getVideoById returns video with matching id`() = runTest(testDispatcher) {
+        val useCase = GetFeedUseCase(testDispatcher)
+        val video = useCase.getVideoById("1")
+
+        assertNotNull(video)
+        assertEquals("1", video?.id)
+        assertEquals("@astro_facts", video?.author)
+    }
+
+    @Test
+    fun `getVideoById returns null for unknown id`() = runTest(testDispatcher) {
+        val useCase = GetFeedUseCase(testDispatcher)
+        val video = useCase.getVideoById("unknown-id")
+
+        assertNull(video)
+    }
+
 }

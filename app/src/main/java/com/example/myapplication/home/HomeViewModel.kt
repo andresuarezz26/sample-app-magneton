@@ -24,15 +24,20 @@ class HomeViewModel(
     fun onIntent(intent: HomeIntent) {
         when (intent) {
             HomeIntent.LoadFeed -> loadFeed()
+            HomeIntent.Retry -> loadFeed()
             is HomeIntent.LikeVideo -> likeVideo(intent.videoId)
         }
     }
 
     private fun loadFeed() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            val videos = getFeedUseCase()
-            _state.update { it.copy(videos = videos, isLoading = false) }
+            _state.update { it.copy(isLoading = true, error = null) }
+            try {
+                val videos = getFeedUseCase()
+                _state.update { it.copy(videos = videos, isLoading = false) }
+            } catch (e: Exception) {
+                _state.update { it.copy(isLoading = false, error = e.message ?: "Failed to load feed") }
+            }
         }
     }
 
