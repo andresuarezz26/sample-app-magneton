@@ -2,75 +2,124 @@ package com.example.myapplication.home
 
 import com.example.myapplication.data.model.VideoItem
 import com.example.myapplication.domain.usecase.GetFeedUseCase
-import kotlinx.coroutines.Dispatchers
+import com.example.myapplication.testutil.MainDispatcherRule
+import com.example.myapplication.testutil.videoItem
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
 
-    private val testDispatcher = StandardTestDispatcher()
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    private val feed = listOf(videoItem("a", likes = 10), videoItem("b", likes = 20))
+    private val getFeedUseCase = mockk<GetFeedUseCase>()
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(testDispatcher)
-    }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
+        coEvery { getFeedUseCase() } returns feed
     }
 
     @Test
-    fun `initial load populates feed with 6 videos and isLoading is false`() = runTest(testDispatcher) {
-        val getFeedUseCase = GetFeedUseCase(testDispatcher)
-        val viewModel = HomeViewModel(getFeedUseCase)
-        advanceUntilIdle()
+    fun `init dispatches LoadFeed and exposes loading state while the feed is in flight`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val gate = CompletableDeferred<List<VideoItem>>()
+            coEvery { getFeedUseCase() } coAnswers { gate.await() }
 
-        val state = viewModel.state.value
-        assertEquals(6, state.videos.size)
-        assertFalse(state.isLoading)
-    }
+            val viewModel = HomeViewModel(getFeedUseCase)
+            runCurrent()
 
-    @Test
-    fun `liking a video increments only that video likes by 1`() = runTest(testDispatcher) {
-        val getFeedUseCase = GetFeedUseCase(testDispatcher)
-        val viewModel = HomeViewModel(getFeedUseCase)
-        advanceUntilIdle()
+            assertTrue(viewModel.state.value.isLoading)
+            assertTrue(viewModel.state.value.videos.isEmpty())
 
-        val targetId = "1"
-        val videosBefore = viewModel.state.value.videos.toList()
-        val initialLikes = videosBefore.first { it.id == targetId }.likes
+            gate.complete(feed)
+            advanceUntilIdle()
 
-        viewModel.onIntent(HomeIntent.LikeVideo(targetId))
-
-        val videosAfter = viewModel.state.value.videos
-        assertEquals(initialLikes + 1, videosAfter.first { it.id == targetId }.likes)
-        videosAfter.filter { it.id != targetId }.forEach { video ->
-            val original = videosBefore.first { it.id == video.id }
-            assertEquals(original.likes, video.likes)
+            assertFalse(viewModel.state.value.isLoading)
+            assertEquals(feed, viewModel.state.value.videos)
         }
+
+    @Test
+    fun `successful load populates videos and clears loading`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val viewModel = HomeViewModel(getFeedUseCase)
+            advanceUntilIdle()
+
+            assertEquals(HomeUiState(videos = feed, isLoading = false), viewModel.state.value)
+            coVerify(exactly = 1) { getFeedUseCase() }
+        }
+
+    @Test
+    fun `LoadFeed intent re-fetches the feed`() = runTest(mainDispatcherRule.testDispatcher) {
+        val refreshed = listOf(videoItem("c", likes = 5))
+        coEvery { getFeedUseCase() } returnsMany listOf(feed, refreshed)
+
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+        assertEquals(feed, viewModel.state.value.videos)
+
+        viewModel.onIntent(HomeIntent.LoadFeed)
+        advanceUntilIdle()
+
+        coVerify(exactly = 2) { getFeedUseCase() }
+        assertEquals(refreshed, viewModel.state.value.videos)
     }
 
     @Test
-    fun `liking a video with unknown id leaves feed unchanged`() = runTest(testDispatcher) {
-        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+    fun `LikeVideo increments only the target video by one`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val viewModel = HomeViewModel(getFeedUseCase)
+            advanceUntilIdle()
+
+            viewModel.onIntent(HomeIntent.LikeVideo("a"))
+
+            val videos = viewModel.state.value.videos
+            assertEquals(11, videos.first { it.id == "a" }.likes)
+            assertEquals(20, videos.first { it.id == "b" }.likes)
+        }
+
+    @Test
+    fun `LikeVideo twice increments by two`() = runTest(mainDispatcherRule.testDispatcher) {
         val viewModel = HomeViewModel(getFeedUseCase)
         advanceUntilIdle()
 
-        val videosBefore = viewModel.state.value.videos.toList()
+        viewModel.onIntent(HomeIntent.LikeVideo("a"))
+        viewModel.onIntent(HomeIntent.LikeVideo("a"))
 
-        viewModel.onIntent(HomeIntent.LikeVideo("unknown-id-999"))
-
-        assertEquals(videosBefore, viewModel.state.value.videos)
+        assertEquals(12, viewModel.state.value.videos.first { it.id == "a" }.likes)
     }
+
+    @Test
+    fun `LikeVideo with unknown id leaves feed unchanged`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val viewModel = HomeViewModel(getFeedUseCase)
+            advanceUntilIdle()
+
+            viewModel.onIntent(HomeIntent.LikeVideo("missing"))
+
+            assertEquals(feed, viewModel.state.value.videos)
+        }
+
+    @Test
+    fun `LikeVideo before the feed has loaded is a no-op`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val viewModel = HomeViewModel(getFeedUseCase)
+
+            viewModel.onIntent(HomeIntent.LikeVideo("a"))
+
+            assertTrue(viewModel.state.value.videos.isEmpty())
+        }
 }
