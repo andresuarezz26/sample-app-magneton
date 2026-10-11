@@ -10,10 +10,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.myapplication.generate.GenerateScreen
 import com.example.myapplication.home.HomeScreen
+import com.example.myapplication.profile.ProfileScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.upload.UploadScreen
 
-private enum class Screen { Home, Upload, Generate }
+private enum class Screen { Home, Upload, Generate, Profile }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,13 +23,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 var currentScreen by remember { mutableStateOf(Screen.Home) }
+                var profileAuthor by remember { mutableStateOf("") }
                 when (currentScreen) {
                     Screen.Home -> HomeScreen(
                         onUploadClick = { currentScreen = Screen.Upload },
-                        onGenerateClick = { currentScreen = Screen.Generate }
+                        onGenerateClick = { currentScreen = Screen.Generate },
+                        onProfileClick = { author ->
+                            profileAuthor = author
+                            currentScreen = Screen.Profile
+                        }
                     )
                     Screen.Upload -> UploadScreen(onBack = { currentScreen = Screen.Home })
                     Screen.Generate -> GenerateScreen(onBack = { currentScreen = Screen.Home })
+                    Screen.Profile -> ProfileScreen(author = profileAuthor, onBack = { currentScreen = Screen.Home })
                 }
             }
         }

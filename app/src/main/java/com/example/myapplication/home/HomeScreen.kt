@@ -38,14 +38,16 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onUploadClick: () -> Unit = {},
-    onGenerateClick: () -> Unit = {}
+    onGenerateClick: () -> Unit = {},
+    onProfileClick: (String) -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     HomeContent(
         state = state,
         onIntent = viewModel::onIntent,
         onUploadClick = onUploadClick,
-        onGenerateClick = onGenerateClick
+        onGenerateClick = onGenerateClick,
+        onProfileClick = onProfileClick
     )
 }
 
@@ -54,7 +56,8 @@ private fun HomeContent(
     state: HomeUiState,
     onIntent: (HomeIntent) -> Unit,
     onUploadClick: () -> Unit = {},
-    onGenerateClick: () -> Unit = {}
+    onGenerateClick: () -> Unit = {},
+    onProfileClick: (String) -> Unit = {}
 ) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
@@ -77,7 +80,8 @@ private fun HomeContent(
                     val video = state.videos[page]
                     VideoPage(
                         video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
+                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) },
+                        onProfileClick = { onProfileClick(video.author) }
                     )
                 }
             }
@@ -106,7 +110,7 @@ private fun HomeContent(
 }
 
 @Composable
-private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
+private fun VideoPage(video: VideoItem, onLike: () -> Unit, onProfileClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -148,7 +152,8 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.25f)),
+                    .background(Color.White.copy(alpha = 0.25f))
+                    .clickable(onClick = onProfileClick),
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = video.author.take(2).uppercase(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
