@@ -18,6 +18,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -48,27 +49,33 @@ private fun HomeContent(
 ) {
     val pagerState = rememberPagerState(pageCount = { state.videos.size })
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { onIntent(HomeIntent.Refresh) },
+        modifier = Modifier.fillMaxSize()
     ) {
-        if (state.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White
-            )
-        } else {
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                if (page < state.videos.size) {
-                    val video = state.videos[page]
-                    VideoPage(
-                        video = video,
-                        onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
-                    )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.White
+                )
+            } else {
+                VerticalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    if (page < state.videos.size) {
+                        val video = state.videos[page]
+                        VideoPage(
+                            video = video,
+                            onLike = { onIntent(HomeIntent.LikeVideo(video.id)) }
+                        )
+                    }
                 }
             }
         }
