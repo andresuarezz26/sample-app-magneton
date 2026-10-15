@@ -24,6 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,7 +58,9 @@ private fun HomeContent(
     ) {
         if (state.isLoading) {
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .testTag("loading_indicator"),
                 color = Color.White
             )
         } else {
@@ -134,7 +139,14 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
                 Text(text = video.author.take(2).uppercase(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
 
-            ActionItem(icon = "❤️", count = formatCount(video.likes), onClick = onLike)
+            ActionItem(
+                icon = "❤️",
+                count = formatCount(video.likes),
+                onClick = onLike,
+                modifier = Modifier
+                    .testTag("like_button")
+                    .semantics { contentDescription = "${video.likes} likes" }
+            )
             ActionItem(icon = "💬", count = formatCount(video.comments), onClick = {})
             ActionItem(icon = "➡️", count = formatCount(video.shares), onClick = {})
 
@@ -161,7 +173,8 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
                 text = video.author,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                modifier = Modifier.testTag("video_author")
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
@@ -169,7 +182,8 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
                 color = Color.White,
                 fontSize = 14.sp,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.testTag("video_description")
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -184,10 +198,15 @@ private fun VideoPage(video: VideoItem, onLike: () -> Unit) {
 }
 
 @Composable
-private fun ActionItem(icon: String, count: String, onClick: () -> Unit) {
+private fun ActionItem(
+    icon: String,
+    count: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = modifier.clickable(onClick = onClick)
     ) {
         Text(text = icon, fontSize = 30.sp)
         Spacer(modifier = Modifier.height(2.dp))
