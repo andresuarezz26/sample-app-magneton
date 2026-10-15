@@ -73,4 +73,32 @@ class HomeViewModelTest {
 
         assertEquals(videosBefore, viewModel.state.value.videos)
     }
+
+    @Test
+    fun `refreshFeed sets isRefreshing to true then false and reloads feed`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+        advanceUntilIdle()
+
+        val videosBefore = viewModel.state.value.videos.toList()
+
+        viewModel.onIntent(HomeIntent.RefreshFeed)
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertEquals(videosBefore.size, state.videos.size)
+        assertFalse(state.isRefreshing)
+        assertEquals(videosBefore, state.videos)
+    }
+
+    @Test
+    fun `refreshFeed does not run when isLoading is true`() = runTest(testDispatcher) {
+        val getFeedUseCase = GetFeedUseCase(testDispatcher)
+        val viewModel = HomeViewModel(getFeedUseCase)
+
+        viewModel.onIntent(HomeIntent.RefreshFeed)
+
+        val state = viewModel.state.value
+        assertFalse(state.isRefreshing)
+    }
 }

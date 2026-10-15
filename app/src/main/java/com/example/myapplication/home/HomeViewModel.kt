@@ -24,6 +24,7 @@ class HomeViewModel(
     fun onIntent(intent: HomeIntent) {
         when (intent) {
             HomeIntent.LoadFeed -> loadFeed()
+            HomeIntent.RefreshFeed -> refreshFeed()
             is HomeIntent.LikeVideo -> likeVideo(intent.videoId)
         }
     }
@@ -33,6 +34,15 @@ class HomeViewModel(
             _state.update { it.copy(isLoading = true) }
             val videos = getFeedUseCase()
             _state.update { it.copy(videos = videos, isLoading = false) }
+        }
+    }
+
+    private fun refreshFeed() {
+        if (_state.value.isLoading) return
+        viewModelScope.launch {
+            _state.update { it.copy(isRefreshing = true) }
+            val videos = getFeedUseCase()
+            _state.update { it.copy(videos = videos, isRefreshing = false) }
         }
     }
 
